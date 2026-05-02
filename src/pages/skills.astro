@@ -1,0 +1,227 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { pagesById } from "../content/pages";
+import { skills, skillCategoryLabels, type Skill } from "../content/portfolio";
+
+const meta = pagesById.skills;
+
+// Group skills by category, preserving the order in skillCategoryLabels
+const grouped = (Object.keys(skillCategoryLabels) as Skill["category"][]).map(
+  (key) => ({
+    key,
+    label: skillCategoryLabels[key],
+    items: skills.filter((s) => s.category === key),
+  })
+);
+---
+
+<Layout title="Skills — Akishai" description={meta.blurb}>
+  <PageHeader pageId="skills" />
+
+  <section class="mx-auto max-w-5xl px-6 pb-32">
+    <div class="space-y-16">
+      {
+        grouped.map((group, gi) => (
+          <div data-fade-in style={`animation-delay: ${gi * 100}ms`}>
+            <header class="mb-8 flex items-baseline justify-between border-b border-silver-600/20 pb-3">
+              <h2 class="text-2xl text-silver-100 md:text-3xl">
+                <span class="text-gradient-gold italic">{group.label}</span>
+              </h2>
+              <span class="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-500">
+                {String(group.items.length).padStart(2, "0")}
+              </span>
+            </header>
+
+            <ul
+              class="grid grid-cols-3 gap-y-8 sm:grid-cols-4 md:grid-cols-7"
+              role="list"
+            >
+              {group.items.map((s, i) => (
+                <li
+                  class="tilt group relative flex aspect-square flex-col items-center justify-center gap-3"
+                  data-tilt
+                  data-magnetic
+                >
+                  {/* Outer wrapper — handles 3D parallax (Z-lift on hover) */}
+                  <span
+                    class="tilt-icon h-16 w-16 md:h-20 md:w-20"
+                    style={`--coin-delay: -${(i * 0.31) % 3}s; --coin-bob-delay: -${(i * 0.47) % 4}s;`}
+                  >
+                    {/* Inner element — Mario coin: floats + flips around Y */}
+                    <span class="tilt-bob block h-full w-full">
+                      <img
+                        src={s.icon}
+                        alt={s.name}
+                        loading="lazy"
+                        decoding="async"
+                        class="tilt-coin block h-full w-full object-contain"
+                      />
+                    </span>
+                  </span>
+
+                  {/* Label — floats slightly forward */}
+                  <span class="tilt-label text-center font-mono text-[9px] uppercase leading-tight tracking-[0.18em] text-silver-300/80 transition-colors md:text-[10px]">
+                    {s.name}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* --- Fade-in --- */
+  [data-fade-in] {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: cardFade 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes cardFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* --- Tilt cards --- */
+  .tilt {
+    transform-style: preserve-3d;
+    perspective: 800px;
+    transform: perspective(800px) rotateX(0deg) rotateY(0deg) scale(1);
+    transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    will-change: transform;
+  }
+  /* Quicker, more responsive when actively hovered */
+  .tilt[data-tilting="true"] {
+    transition: transform 80ms ease-out;
+  }
+
+  /* Outer icon wrapper — handles the cursor-driven 3D parallax */
+  .tilt-icon {
+    display: inline-block;
+    transform: translateZ(28px);
+    transform-style: preserve-3d;
+    transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .tilt-label {
+    transform: translateZ(14px);
+    transition:
+      transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      color 200ms ease;
+  }
+  .tilt:hover .tilt-icon {
+    transform: translateZ(46px) scale(1.06);
+  }
+  .tilt:hover .tilt-label {
+    color: rgba(230, 194, 117, 0.9);
+    transform: translateZ(20px);
+  }
+
+  /* Mario-coin: floating bob animation on the bob layer */
+  .tilt-bob {
+    transform-style: preserve-3d;
+    animation: coinBob 3.4s ease-in-out infinite;
+    animation-delay: var(--coin-bob-delay, 0s);
+    will-change: transform;
+  }
+  @keyframes coinBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+
+  /* Mario-coin: continuous Y-axis spin on the coin (img) itself.
+     Soft baseline drop-shadow; gold halo on hover. */
+  .tilt-coin {
+    transform-style: preserve-3d;
+    backface-visibility: visible;
+    animation: coinSpin 2.8s linear infinite;
+    animation-delay: var(--coin-delay, 0s);
+    filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.55));
+    transition: filter 220ms ease;
+    will-change: transform, filter;
+  }
+  @keyframes coinSpin {
+    from { transform: rotateY(0deg); }
+    to   { transform: rotateY(360deg); }
+  }
+  .tilt:hover .tilt-coin {
+    filter:
+      drop-shadow(0 4px 14px rgba(0, 0, 0, 0.55))
+      drop-shadow(0 0 14px rgba(212, 168, 90, 0.55))
+      drop-shadow(0 0 28px rgba(184, 134, 11, 0.35));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-fade-in] {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    .tilt,
+    .tilt-icon,
+    .tilt-label,
+    .tilt-bob,
+    .tilt-coin {
+      transition: none !important;
+      animation: none !important;
+    }
+    .tilt:hover .tilt-icon {
+      transform: translateZ(28px);
+    }
+    .tilt:hover .tilt-label {
+      transform: translateZ(14px);
+    }
+  }
+</style>
+
+<script>
+  type Win = typeof window & { __tiltInited?: boolean };
+  const W = window as Win;
+
+  const MAX_DEG = 32;
+
+  function bindTilt(el: HTMLElement) {
+    if (el.dataset.tiltBound) return;
+    el.dataset.tiltBound = "true";
+
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width; // 0..1
+      const py = (e.clientY - r.top) / r.height; // 0..1
+      const rx = (0.5 - py) * MAX_DEG * 2;
+      const ry = (px - 0.5) * MAX_DEG * 2;
+      el.dataset.tilting = "true";
+      el.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.04)`;
+      el.style.setProperty("--mx", `${px * 100}%`);
+      el.style.setProperty("--my", `${py * 100}%`);
+    };
+
+    const onLeave = () => {
+      el.dataset.tilting = "false";
+      el.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) scale(1)";
+      el.style.setProperty("--mx", "50%");
+      el.style.setProperty("--my", "50%");
+    };
+
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerleave", onLeave);
+    el.addEventListener("pointercancel", onLeave);
+  }
+
+  function setupTilt() {
+    document
+      .querySelectorAll<HTMLElement>("[data-tilt]")
+      .forEach((el) => bindTilt(el));
+  }
+
+  setupTilt();
+  if (!W.__tiltInited) {
+    W.__tiltInited = true;
+    document.addEventListener("astro:page-load", () => setupTilt());
+  }
+</script>

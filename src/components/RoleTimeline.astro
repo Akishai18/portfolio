@@ -1,0 +1,78 @@
+---
+import type { Role } from "../content/portfolio";
+
+interface Props {
+  roles: Role[];
+  /** Eyebrow + heading for the section */
+  label: string;
+  heading: string;
+}
+
+const { roles, label, heading } = Astro.props;
+---
+
+<section class="mx-auto max-w-4xl px-6 pb-20">
+  <header class="mb-12">
+    <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400">
+      ◦ {label}
+    </p>
+    <h2 class="mt-2 text-3xl md:text-4xl">
+      <span class="text-gradient-silver">{heading.split(" ")[0]}</span>
+      <span class="text-gradient-gold italic">
+        {heading.split(" ").slice(1).join(" ")}
+      </span>
+    </h2>
+  </header>
+
+  <ul class="relative" role="list">
+    {/* The vertical thread */}
+    <span
+      class="absolute left-4 top-2 bottom-2 w-px bg-gradient-to-b from-gold-500/40 via-silver-500/20 to-transparent md:left-6"
+      aria-hidden="true"></span>
+
+    {
+      roles.map((r) => (
+        <li class="relative flex gap-5 pb-12 last:pb-0 md:gap-8">
+          {/* Org icon node on the timeline */}
+          <div class="relative z-10 shrink-0">
+            <span
+              class="grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-gold-500/40 bg-void-900 shadow-[0_0_18px_rgba(184,134,11,0.25)] md:h-12 md:w-12"
+              aria-hidden="true"
+              style={`background-color: ${r.iconBg ?? "white"};`}
+            >
+              <img
+                src={r.icon}
+                alt=""
+                class="h-7 w-7 object-contain md:h-9 md:w-9"
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
+          </div>
+
+          <div class="flex-1 pt-1">
+            <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-500">
+              {r.date}
+            </p>
+            <h3 class="mt-1 text-xl text-silver-100 md:text-2xl">
+              {r.title}
+            </h3>
+            <p class="mt-0.5 text-sm text-gold-300">{r.org}</p>
+
+            <ul class="mt-4 space-y-2 text-sm text-silver-300/85" role="list">
+              {r.bullets.map((b) => (
+                <li class="flex gap-3 leading-relaxed">
+                  <span
+                    class="mt-2 block h-1 w-1 shrink-0 rounded-full bg-gold-500"
+                    aria-hidden="true"
+                  />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</section>

@@ -1,1 +1,192 @@
 @import "tailwindcss";
+
+/* --- Fonts ---------------------------------------------------------- */
+/* Fraunces (display serif) + Geist Sans (body) + Geist Mono (code/tags) */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap");
+
+/* --- Theme tokens (Tailwind v4 CSS-first config) -------------------- */
+@theme {
+  /* Black canvas — slight blue undertone for space depth */
+  --color-void-950: #050608;
+  --color-void-900: #0a0b10;
+  --color-void-800: #11131a;
+  --color-void-700: #1a1d27;
+
+  /* Brick gold — primary accent (darker side of gold) */
+  --color-gold-300: #e6c275;
+  --color-gold-400: #d4a85a;
+  --color-gold-500: #b8860b; /* primary */
+  --color-gold-600: #9a7009;
+  --color-gold-700: #7a5c0e;
+  --color-gold-800: #5a430a;
+
+  /* Silver — text + cool accents */
+  --color-silver-100: #f4f5f7;
+  --color-silver-200: #d8dbe2;
+  --color-silver-300: #c0c5ce; /* body */
+  --color-silver-400: #8a8f98; /* muted */
+  --color-silver-500: #5b6068;
+  --color-silver-600: #3a3e46;
+
+  /* Type families */
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* --- Base ----------------------------------------------------------- */
+html,
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  background-color: var(--color-void-950);
+  color: var(--color-silver-300);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Faint nebula gradient — extremely subtle */
+  background-image:
+    radial-gradient(ellipse 1200px 800px at 15% 0%, rgba(184, 134, 11, 0.06), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 85% 100%, rgba(120, 140, 200, 0.05), transparent 60%);
+}
+
+/* Hide native cursor when our custom cursor is active */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-gold-500);
+  color: var(--color-void-950);
+}
+
+/* Focus rings — only when keyboard focused, not on click */
+*:focus {
+  outline: none;
+}
+*:focus-visible {
+  outline: 2px solid var(--color-gold-400);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Skip link for keyboard users */
+.skip-to-content {
+  position: fixed;
+  top: -100px;
+  left: 12px;
+  padding: 10px 16px;
+  background: var(--color-void-900);
+  color: var(--color-gold-300);
+  border: 1px solid var(--color-gold-500);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  z-index: 10000;
+  transition: top 200ms ease;
+}
+.skip-to-content:focus {
+  top: 12px;
+}
+
+/* Headings default to display serif */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--color-silver-100);
+}
+
+/* Scrollbar — subtle gold */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-void-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-gold-700);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gold-500);
+}
+
+/* --- Reusable utilities -------------------------------------------- */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #e6c275 0%, #b8860b 50%, #7a5c0e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.text-gradient-silver {
+  background: linear-gradient(135deg, #f4f5f7 0%, #c0c5ce 50%, #8a8f98 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Soft gold glow used for accents, hover states, planet highlights */
+.glow-gold {
+  box-shadow:
+    0 0 20px rgba(184, 134, 11, 0.25),
+    0 0 40px rgba(184, 134, 11, 0.15),
+    inset 0 0 20px rgba(212, 168, 90, 0.08);
+}
+
+/* Subtle hairline border in gold */
+.border-gold-faint {
+  border: 1px solid rgba(184, 134, 11, 0.25);
+}
+
+/* Reduced motion — kill all heavy animation */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- Astro View Transitions ---------------------------------------- */
+
+/* Default: gentle fade for ordinary navigation (back button etc.) */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+::view-transition-old(root) {
+  animation: fade-out 320ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(root) {
+  animation: fade-in 380ms cubic-bezier(0.4, 0, 0.2, 1) 80ms both;
+}
+
+/* Persisted layers: explicit z-index ordering during view transitions */
+::view-transition-group(starfield-layer) {
+  z-index: -1;
+}
+::view-transition-group(cursor-layer) {
+  z-index: 9999;
+}

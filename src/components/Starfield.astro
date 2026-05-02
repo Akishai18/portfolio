@@ -1,0 +1,377 @@
+---
+/**
+ * Starfield — multi-layer canvas:
+ *   1. Nebula blobs   (slow drifting gold/blue gradients)
+ *   2. Back stars     (200 tiny twinkling points)
+ *   3. Constellation  (~70 connected nodes)
+ *   4. Mid stars      (110 medium twinkling points)
+ *   5. Front stars    (50 bright points + frequent shooting stars/comets)
+ *
+ * Rebuilds on every Astro page load so the animation never goes dark
+ * after a back-navigation.
+ */
+---
+
+<div class="starfield" aria-hidden="true">
+  <canvas data-layer="nebula"></canvas>
+  <canvas data-layer="back"></canvas>
+  <canvas data-layer="constellation"></canvas>
+  <canvas data-layer="mid"></canvas>
+  <canvas data-layer="front"></canvas>
+</div>
+
+<style>
+  .starfield {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .starfield canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  type Star = { x: number; y: number; r: number; a: number; tw: number };
+  type Shot = {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    life: number;
+    max: number;
+    hue: "gold" | "silver" | "warm";
+    size: number;
+  };
+  type Node = { x: number; y: number; tw: number; r: number };
+  type Nebula = { x: number; y: number; r: number; color: string; drift: number };
+  type Layer = {
+    el: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    stars: Star[];
+    speed: number;
+    size: number;
+    tint: string;
+  };
+
+  /* ------------------------------------------------------------- */
+  /* Per-instance state — wrapped in factory so each setup() call  */
+  /* gets fresh closures and we can cleanly cancel.                 */
+  /* ------------------------------------------------------------- */
+
+  function createStarfield() {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let rafId = 0;
+    let nebulaCtx: CanvasRenderingContext2D | null = null;
+    let nebulae: Nebula[] = [];
+    const starLayers: Layer[] = [];
+    let conCtx: CanvasRenderingContext2D | null = null;
+    let conNodes: Node[] = [];
+    let conLinks: Array<{ a: number; b: number; d: number }> = [];
+    let shots: Shot[] = [];
+    let nebulaPhase = 0;
+
+    const starConfigs = [
+      { sel: '[data-layer="back"]', count: 200, size: 0.55, speed: 0.012, tint: "rgba(192,197,206,0.55)" },
+      { sel: '[data-layer="mid"]', count: 110, size: 1.0, speed: 0.04, tint: "rgba(230,194,117,0.65)" },
+      { sel: '[data-layer="front"]', count: 50, size: 1.7, speed: 0.085, tint: "rgba(244,245,247,0.92)" },
+    ] as const;
+
+    function drawNebulae() {
+      if (!nebulaCtx) return;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      nebulaCtx.clearRect(0, 0, w, h);
+      for (const n of nebulae) {
+        const grad = nebulaCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+        grad.addColorStop(0, n.color);
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+        nebulaCtx.fillStyle = grad;
+        nebulaCtx.beginPath();
+        nebulaCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        nebulaCtx.fill();
+      }
+    }
+
+    function buildConstellation() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const COUNT = Math.min(70, Math.max(40, Math.round((w * h) / 28000)));
+      conNodes = Array.from({ length: COUNT }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 1 + Math.random() * 1.6,
+        tw: Math.random() * Math.PI * 2,
+      }));
+
+      const MAX_DIST = Math.min(220, Math.max(140, Math.sqrt(w * h) * 0.16));
+      conLinks = [];
+      for (let i = 0; i < conNodes.length; i++) {
+        const dists: Array<{ j: number; d: number }> = [];
+        for (let j = 0; j < conNodes.length; j++) {
+          if (i === j) continue;
+          const dx = conNodes[i].x - conNodes[j].x;
+          const dy = conNodes[i].y - conNodes[j].y;
+          const d = Math.hypot(dx, dy);
+          if (d < MAX_DIST) dists.push({ j, d });
+        }
+        dists.sort((a, b) => a.d - b.d);
+        for (let k = 0; k < Math.min(2, dists.length); k++) {
+          const a = i;
+          const b = dists[k].j;
+          const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+          if (!conLinks.find((l) => `${l.a}-${l.b}` === key)) {
+            conLinks.push({ a: Math.min(a, b), b: Math.max(a, b), d: dists[k].d });
+          }
+        }
+      }
+    }
+
+    function init() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      const canvases = document.querySelectorAll<HTMLCanvasElement>(".starfield canvas");
+      if (canvases.length === 0) return false; // No starfield in DOM yet
+
+      canvases.forEach((c) => {
+        c.width = w * dpr;
+        c.height = h * dpr;
+        const ctx = c.getContext("2d");
+        if (ctx) {
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.scale(dpr, dpr);
+        }
+      });
+
+      // Nebula
+      const neb = document.querySelector<HTMLCanvasElement>('[data-layer="nebula"]');
+      nebulaCtx = neb ? neb.getContext("2d") : null;
+      nebulae = [
+        { x: w * 0.18, y: h * 0.22, r: Math.max(w, h) * 0.38, color: "rgba(184,134,11,0.07)", drift: 0.02 },
+        { x: w * 0.85, y: h * 0.78, r: Math.max(w, h) * 0.45, color: "rgba(120,140,200,0.05)", drift: -0.015 },
+        { x: w * 0.55, y: h * 0.5, r: Math.max(w, h) * 0.3, color: "rgba(212,168,90,0.04)", drift: 0.025 },
+      ];
+      drawNebulae();
+
+      // Star layers
+      starLayers.length = 0;
+      for (const c of starConfigs) {
+        const el = document.querySelector(c.sel) as HTMLCanvasElement | null;
+        if (!el) continue;
+        const ctx = el.getContext("2d");
+        if (!ctx) continue;
+        const stars: Star[] = Array.from({ length: c.count }, () => ({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: c.size * (0.55 + Math.random() * 0.7),
+          a: 0.4 + Math.random() * 0.6,
+          tw: Math.random() * Math.PI * 2,
+        }));
+        starLayers.push({ el, ctx, stars, speed: c.speed, size: c.size, tint: c.tint });
+      }
+
+      // Constellation
+      const con = document.querySelector<HTMLCanvasElement>('[data-layer="constellation"]');
+      conCtx = con ? con.getContext("2d") : null;
+      buildConstellation();
+      shots = [];
+      return true;
+    }
+
+    function maybeShootingStar() {
+      if (reduce) return;
+      if (Math.random() < 0.008 && shots.length < 4) {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const fromLeft = Math.random() < 0.6;
+        const startX = fromLeft ? Math.random() * w * 0.4 : w - Math.random() * w * 0.4;
+        const startY = Math.random() * h * 0.5;
+        const angle = fromLeft
+          ? 0.18 + Math.random() * 0.35
+          : Math.PI - 0.18 - Math.random() * 0.35;
+        const speed = 6 + Math.random() * 6;
+        const hueRoll = Math.random();
+        const hue: Shot["hue"] = hueRoll < 0.5 ? "gold" : hueRoll < 0.85 ? "silver" : "warm";
+        shots.push({
+          x: startX,
+          y: startY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 0,
+          max: 70 + Math.random() * 60,
+          hue,
+          size: 1.2 + Math.random() * 1.2,
+        });
+      }
+    }
+
+    function shotColor(hue: Shot["hue"], alpha: number): string {
+      if (hue === "gold") return `rgba(230,194,117,${alpha})`;
+      if (hue === "silver") return `rgba(244,245,247,${alpha})`;
+      return `rgba(255,200,140,${alpha})`;
+    }
+
+    function frame() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      if (!reduce) {
+        nebulaPhase += 0.005;
+        if (Math.round(nebulaPhase * 60) % 8 === 0) {
+          for (const n of nebulae) {
+            n.x += Math.cos(nebulaPhase + n.drift) * 0.15 * n.drift;
+            n.y += Math.sin(nebulaPhase * 0.7) * 0.1 * n.drift;
+          }
+          drawNebulae();
+        }
+      }
+
+      for (const L of starLayers) {
+        L.ctx.clearRect(0, 0, w, h);
+        L.ctx.fillStyle = L.tint;
+        for (const s of L.stars) {
+          if (!reduce) {
+            s.x -= L.speed;
+            s.tw += 0.012 + L.speed * 0.05;
+            if (s.x < -2) s.x = w + 2;
+          }
+          const flicker = reduce ? 1 : 0.55 + 0.45 * Math.sin(s.tw);
+          L.ctx.globalAlpha = s.a * flicker;
+          L.ctx.beginPath();
+          L.ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          L.ctx.fill();
+        }
+        L.ctx.globalAlpha = 1;
+      }
+
+      if (conCtx) {
+        conCtx.clearRect(0, 0, w, h);
+        if (!reduce) {
+          for (const n of conNodes) n.tw += 0.008;
+        }
+        conCtx.lineWidth = 0.6;
+        for (const link of conLinks) {
+          const a = conNodes[link.a];
+          const b = conNodes[link.b];
+          if (!a || !b) continue;
+          const fade = 1 - link.d / 220;
+          const pulse = reduce ? 0.5 : 0.4 + Math.sin(a.tw + b.tw) * 0.18;
+          const alpha = Math.max(0.03, 0.16 * fade * pulse);
+          conCtx.strokeStyle = `rgba(184,134,11,${alpha})`;
+          conCtx.beginPath();
+          conCtx.moveTo(a.x, a.y);
+          conCtx.lineTo(b.x, b.y);
+          conCtx.stroke();
+        }
+        for (const n of conNodes) {
+          const flicker = reduce ? 1 : 0.6 + 0.4 * Math.sin(n.tw);
+          conCtx.fillStyle = `rgba(212,168,90,${0.55 * flicker})`;
+          conCtx.beginPath();
+          conCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          conCtx.fill();
+        }
+      }
+
+      const front = starLayers[2];
+      if (front) {
+        maybeShootingStar();
+        shots = shots.filter(
+          (s) => s.life < s.max && s.x < w + 100 && s.x > -100 && s.y < h + 100 && s.y > -100,
+        );
+        for (const s of shots) {
+          s.x += s.vx;
+          s.y += s.vy;
+          s.life++;
+          const alpha = 1 - s.life / s.max;
+          const tailLen = 14;
+          const grad = front.ctx.createLinearGradient(
+            s.x,
+            s.y,
+            s.x - s.vx * tailLen,
+            s.y - s.vy * tailLen,
+          );
+          grad.addColorStop(0, shotColor(s.hue, alpha));
+          grad.addColorStop(0.6, shotColor(s.hue, alpha * 0.4));
+          grad.addColorStop(1, shotColor(s.hue, 0));
+          front.ctx.strokeStyle = grad;
+          front.ctx.lineWidth = s.size;
+          front.ctx.lineCap = "round";
+          front.ctx.beginPath();
+          front.ctx.moveTo(s.x, s.y);
+          front.ctx.lineTo(s.x - s.vx * tailLen, s.y - s.vy * tailLen);
+          front.ctx.stroke();
+          front.ctx.fillStyle = shotColor(s.hue, alpha);
+          front.ctx.beginPath();
+          front.ctx.arc(s.x, s.y, s.size * 1.1, 0, Math.PI * 2);
+          front.ctx.fill();
+        }
+      }
+
+      rafId = requestAnimationFrame(frame);
+    }
+
+    function start() {
+      if (rafId) cancelAnimationFrame(rafId);
+      const ok = init();
+      if (!ok) return false;
+      rafId = requestAnimationFrame(frame);
+      return true;
+    }
+
+    function stop() {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+    }
+
+    return { start, stop };
+  }
+
+  /* ------------------------------------------------------------- */
+  /* Lifecycle                                                     */
+  /* Cancel any prior instance on every script execution + every   */
+  /* astro:page-load. Always start a fresh one bound to the        */
+  /* current DOM.                                                   */
+  /* ------------------------------------------------------------- */
+
+  type Win = typeof window & {
+    __starfieldStop?: () => void;
+    __starfieldInited?: boolean;
+  };
+  const W = window as Win;
+
+  function setupStarfield() {
+    W.__starfieldStop?.();
+    const inst = createStarfield();
+    // Retry briefly in case canvases haven't been parsed yet
+    if (!inst.start()) {
+      let attempts = 0;
+      const id = window.setInterval(() => {
+        attempts++;
+        if (inst.start() || attempts > 10) window.clearInterval(id);
+      }, 50);
+    }
+    W.__starfieldStop = inst.stop;
+  }
+
+  // Run immediately (script execution)
+  setupStarfield();
+
+  // Set up global listeners exactly once across script re-executions
+  if (!W.__starfieldInited) {
+    W.__starfieldInited = true;
+    document.addEventListener("astro:page-load", () => setupStarfield());
+    let resizeT: number | undefined;
+    window.addEventListener("resize", () => {
+      if (resizeT) window.clearTimeout(resizeT);
+      resizeT = window.setTimeout(() => setupStarfield(), 150);
+    });
+  }
+</script>

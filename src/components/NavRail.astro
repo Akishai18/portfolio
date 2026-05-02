@@ -1,0 +1,227 @@
+---
+import { pages } from "../content/pages";
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+// All canonical paths that should be navigable
+const isHome = path === "/";
+---
+
+<aside
+  class="nav-rail pointer-events-none fixed inset-y-0 left-0 z-40 hidden w-[180px] flex-col justify-between px-7 py-8 md:flex"
+  aria-label="Primary navigation"
+>
+  {/* Brand / home */}
+  <div class="pointer-events-auto">
+    <a
+      href="/"
+      data-magnetic
+      aria-current={isHome ? "page" : undefined}
+      class:list={[
+        "group flex items-center gap-3 transition",
+        isHome ? "text-gold-200" : "text-silver-200 hover:text-gold-300",
+      ]}
+    >
+      {/* Sun glyph */}
+      <span
+        class="relative grid h-6 w-6 shrink-0 place-items-center"
+        aria-hidden="true"
+      >
+        <span
+          class="absolute inset-0 rounded-full bg-gradient-to-br from-gold-300 via-gold-500 to-gold-700 shadow-[0_0_10px_rgba(184,134,11,0.7)] transition group-hover:shadow-[0_0_18px_rgba(184,134,11,0.9)]"
+        ></span>
+        <span class="absolute inset-0 rounded-full ring-1 ring-gold-500/40"></span>
+      </span>
+      <span
+        class="font-display text-base italic tracking-[0.02em] transition"
+        style="view-transition-name: brand-name;"
+      >
+        Akishai
+      </span>
+    </a>
+  </div>
+
+  {/* Page links — vertical, lowercase, sparse */}
+  <nav class="pointer-events-auto" aria-label="Pages">
+    <ul class="flex flex-col gap-4" role="list">
+      {
+        pages.map((p) => {
+          const active = path === p.href;
+          return (
+            <li>
+              <a
+                href={p.href}
+                data-magnetic
+                aria-current={active ? "page" : undefined}
+                class:list={[
+                  "group relative flex items-center gap-3 font-display text-lg tracking-[0.01em] transition-all",
+                  active
+                    ? "text-gold-200"
+                    : "text-silver-300/70 hover:text-silver-100",
+                ]}
+              >
+                {/* Planet glyph */}
+                <span
+                  class:list={[
+                    "relative grid h-3 w-3 shrink-0 place-items-center transition-transform",
+                    active ? "scale-125" : "group-hover:scale-110",
+                  ]}
+                  style={`view-transition-name: rail-planet-${p.id};`}
+                  aria-hidden="true"
+                >
+                  <span
+                    class="absolute inset-0 rounded-full"
+                    style={`background: radial-gradient(circle at 30% 30%, ${p.accent}, ${p.color} 70%); box-shadow: 0 0 ${active ? "10px" : "5px"} ${p.color}${active ? "cc" : "66"};`}
+                  ></span>
+                </span>
+
+                <span
+                  class:list={[
+                    "lowercase transition-all",
+                    active ? "italic" : "",
+                  ]}
+                >
+                  {p.title}
+                </span>
+
+                {/* Active indicator dash */}
+                {active && (
+                  <span
+                    class="ml-1 inline-block h-px w-4 bg-gradient-to-r from-gold-400 to-transparent"
+                    aria-hidden="true"
+                  />
+                )}
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+
+  {/* Webring icons — community badges */}
+  <div class="pointer-events-auto">
+    <p
+      class="mb-3 font-mono text-[8px] uppercase tracking-[0.4em] text-silver-500"
+    >
+      ◦ Webrings
+    </p>
+    <ul class="flex flex-wrap items-center gap-2.5" role="list">
+      {/* SE '30 Webring — prev / icon / next */}
+      <li class="flex items-center gap-1.5">
+        <a
+          href="https://se30webring.com?from=https://akishai.dev&dir=prev"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Previous in SE '30 Webring"
+          data-magnetic
+          class="text-gold-400/70 transition hover:text-gold-200"
+        >
+          <svg viewBox="0 0 16 16" class="h-3 w-3 fill-current" aria-hidden="true">
+            <path d="M11 2 L4 8 L11 14 L11 2 Z" />
+          </svg>
+        </a>
+        <a
+          href="https://se30webring.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="SE '30 Webring"
+          data-magnetic
+          class="block transition-transform hover:scale-110"
+          title="SE '30 Webring"
+        >
+          <img
+            src="https://se30webring.com/assets/icon-yellow.svg"
+            alt="SE '30 Webring"
+            class="h-7 w-7 opacity-80 transition-opacity hover:opacity-100"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+        <a
+          href="https://se30webring.com?from=https://akishai.dev&dir=next"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Next in SE '30 Webring"
+          data-magnetic
+          class="text-gold-400/70 transition hover:text-gold-200"
+        >
+          <svg viewBox="0 0 16 16" class="h-3 w-3 fill-current" aria-hidden="true">
+            <path d="M5 2 L12 8 L5 14 L5 2 Z" />
+          </svg>
+        </a>
+      </li>
+
+      {/* UW SE Webring */}
+      <li>
+        <a
+          href="https://se-webring.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="UW SE Webring"
+          data-magnetic
+          class="block transition-transform hover:scale-110"
+          title="UW SE Webring"
+        >
+          <img
+            src="/img/webring.png"
+            alt="UW SE Webring"
+            class="h-7 w-7 object-contain opacity-80 transition-opacity hover:opacity-100"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+      </li>
+    </ul>
+  </div>
+</aside>
+
+{/* Mobile fallback: bottom dock with planet glyphs only */}
+<header
+  class="fixed inset-x-0 bottom-0 z-40 flex justify-center md:hidden pointer-events-none"
+  aria-label="Primary"
+>
+  <nav
+    class="pointer-events-auto mb-4 flex items-center gap-1 rounded-full border border-silver-600/25 bg-void-900/80 px-2 py-2 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.5)]"
+  >
+    <a
+      href="/"
+      data-magnetic
+      aria-current={isHome ? "page" : undefined}
+      class:list={[
+        "grid h-8 w-8 place-items-center rounded-full transition",
+        isHome ? "bg-gold-500/15" : "hover:bg-silver-100/5",
+      ]}
+      aria-label="Home"
+    >
+      <span class="relative h-3.5 w-3.5">
+        <span
+          class="absolute inset-0 rounded-full bg-gradient-to-br from-gold-300 via-gold-500 to-gold-700 shadow-[0_0_8px_rgba(184,134,11,0.7)]"
+        ></span>
+      </span>
+    </a>
+    <span class="mx-1 h-5 w-px bg-silver-500/20" aria-hidden="true"></span>
+    {
+      pages.map((p) => {
+        const active = path === p.href;
+        return (
+          <a
+            href={p.href}
+            data-magnetic
+            aria-label={p.title}
+            aria-current={active ? "page" : undefined}
+            class:list={[
+              "grid h-8 w-8 place-items-center rounded-full transition",
+              active ? "bg-gold-500/15" : "hover:bg-silver-100/5",
+            ]}
+          >
+            <span
+              class="relative h-3 w-3 rounded-full"
+              style={`background: radial-gradient(circle at 30% 30%, ${p.accent}, ${p.color} 70%); box-shadow: 0 0 6px ${p.color}80;`}
+            />
+          </a>
+        );
+      })
+    }
+  </nav>
+</header>

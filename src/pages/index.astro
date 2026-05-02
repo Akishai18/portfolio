@@ -1,11 +1,243 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Layout from "../layouts/Layout.astro";
+import SocialLinks from "../components/SocialLinks.astro";
+import SolarSystem from "../components/SolarSystem";
+import { profile } from "../content/profile";
 ---
 
 <Layout>
-	<Welcome />
+  <section class="relative mx-auto min-h-screen max-w-6xl px-6 pt-16 pb-24 md:pt-24">
+    <!-- Eyebrow -->
+    <p
+      class="font-mono text-[10px] uppercase tracking-[0.5em] text-gold-400"
+      data-fade-in
+    >
+      ◦ {profile.school} · {profile.program}
+    </p>
+
+    <!-- Two-column hero -->
+    <div class="mt-10 grid items-center gap-14 md:grid-cols-[1.4fr_1fr] md:gap-20">
+      <!-- Left: name + bio + links -->
+      <div>
+        <h1
+          class="text-balance text-6xl leading-[0.95] md:text-[7.5rem]"
+          data-fade-in
+          data-fade-in-delay="80"
+        >
+          <span class="block text-silver-200">Hello, I'm</span>
+          <span
+            class="text-gradient-gold mt-2 block italic"
+            style="view-transition-name: hero-name;"
+          >
+            {profile.name}.
+          </span>
+        </h1>
+
+        <p
+          class="mt-8 max-w-xl text-pretty text-lg leading-[1.7] text-silver-300/90 md:text-xl"
+          data-fade-in
+          data-fade-in-delay="180"
+        >
+          {profile.tagline}
+        </p>
+
+        <div class="mt-10" data-fade-in data-fade-in-delay="260">
+          <SocialLinks />
+        </div>
+
+        <div
+          class="mt-12 flex flex-wrap items-center gap-4"
+          data-fade-in
+          data-fade-in-delay="340"
+        >
+          <a
+            href="/projects"
+            data-magnetic
+            class="group relative inline-flex items-center gap-2 rounded-full border border-gold-500/50 bg-gold-500/10 px-7 py-3 font-mono text-xs uppercase tracking-[0.25em] text-gold-300 transition hover:border-gold-300 hover:bg-gold-500/15 hover:text-gold-200"
+          >
+            See my work
+            <span
+              class="transition-transform duration-300 group-hover:translate-x-1"
+              aria-hidden="true">→</span
+            >
+          </a>
+          <a
+            href="/about"
+            data-magnetic
+            class="inline-flex items-center gap-2 rounded-full border border-silver-500/30 px-7 py-3 font-mono text-xs uppercase tracking-[0.25em] text-silver-200 transition hover:border-silver-300/60 hover:bg-silver-100/5"
+          >
+            About me
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: portrait with gold ring -->
+      <div class="relative mx-auto flex w-full max-w-sm justify-center md:justify-end">
+        <div
+          class="relative"
+          data-fade-in
+          data-fade-in-delay="120"
+          style="view-transition-name: hero-photo;"
+        >
+          <!-- Outer glow -->
+          <div
+            class="pointer-events-none absolute -inset-6 rounded-full bg-gold-500/20 blur-3xl"
+            aria-hidden="true"
+          ></div>
+          <!-- Rotating dashed ring -->
+          <div
+            class="pointer-events-none absolute -inset-3 rounded-full border border-dashed border-gold-500/40 animate-orbit"
+            aria-hidden="true"
+          ></div>
+          <!-- Inner gold-tinted ring -->
+          <div
+            class="relative h-72 w-72 overflow-hidden rounded-full border border-gold-500/60 shadow-[0_0_40px_rgba(184,134,11,0.35),inset_0_0_30px_rgba(212,168,90,0.15)] md:h-80 md:w-80"
+          >
+            <img
+              src={profile.photo}
+              alt={profile.fullName}
+              class="h-full w-full object-cover saturate-[0.85] contrast-[1.05]"
+              loading="eager"
+              decoding="async"
+            />
+            <!-- Soft black-gold vignette overlay -->
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-void-950/70 via-transparent to-void-950/20 mix-blend-multiply"
+              aria-hidden="true"
+            ></div>
+          </div>
+          <!-- Tag underneath -->
+          <p
+            class="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-gold-500/40 bg-void-900/90 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.25em] text-gold-300 backdrop-blur-sm"
+          >
+            {profile.role}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Currently building -->
+    <div
+      class="mt-28 grid gap-6 md:grid-cols-[auto_1fr] md:gap-12"
+      data-fade-in
+      data-fade-in-delay="420"
+    >
+      <div class="md:pt-1">
+        <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-silver-400">
+          Now
+        </p>
+        <h2 class="mt-2 text-3xl md:text-4xl">
+          <span class="text-silver-200">Currently </span>
+          <span class="text-gradient-gold italic">building</span>
+        </h2>
+      </div>
+      <ul class="space-y-5">
+        {
+          profile.currentlyBuilding.map((item, i) => (
+            <li class="group relative flex gap-4 rounded-2xl border border-silver-600/20 bg-void-900/30 p-5 backdrop-blur-sm transition-colors hover:border-gold-500/40">
+              <span class="font-mono text-xs text-gold-400/80 tabular-nums">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <p class="text-silver-300/90 leading-relaxed">{item}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <!-- Scroll cue -->
+    <div class="mt-24 flex flex-col items-center gap-3 opacity-70">
+      <span class="font-mono text-[9px] uppercase tracking-[0.5em] text-silver-500">
+        Explore the system
+      </span>
+      <span
+        class="block h-10 w-px bg-gradient-to-b from-gold-500 to-transparent animate-pulse-slow"
+        aria-hidden="true"></span>
+    </div>
+  </section>
+
+  <!-- Solar system: interactive 3D nav hub -->
+  <section class="relative mx-auto max-w-7xl px-6 pb-32">
+    <div class="mb-10 flex flex-col items-center text-center">
+      <p class="font-mono text-[10px] uppercase tracking-[0.5em] text-gold-400">
+        ◦ The system
+      </p>
+      <h2 class="mt-3 text-balance text-4xl md:text-6xl">
+        <span class="text-gradient-silver">Click a </span>
+        <span class="text-gradient-gold italic">planet</span>
+        <span class="text-gradient-silver"> to travel.</span>
+      </h2>
+      <p class="mt-4 max-w-md text-sm text-silver-400">
+        Each planet is a section of this site. Hover for details — click to fly there.
+      </p>
+    </div>
+
+    <div class="relative h-[60vh] min-h-[480px] w-full">
+      <SolarSystem client:visible />
+    </div>
+  </section>
 </Layout>
+
+<style>
+  /* Subtle staggered entrance for [data-fade-in] elements */
+  [data-fade-in] {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: fadeInUp 800ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: var(--fade-delay, 0ms);
+  }
+  @keyframes fadeInUp {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes orbit {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-orbit {
+    animation: orbit 24s linear infinite;
+  }
+
+  @keyframes pulseSlow {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scaleY(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scaleY(1.4);
+    }
+  }
+  .animate-pulse-slow {
+    transform-origin: top;
+    animation: pulseSlow 2.6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-fade-in] {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    .animate-orbit,
+    .animate-pulse-slow {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // Apply per-element fade-in delays from data-attr
+  document.querySelectorAll<HTMLElement>("[data-fade-in-delay]").forEach((el) => {
+    const d = el.getAttribute("data-fade-in-delay");
+    if (d) el.style.setProperty("--fade-delay", `${d}ms`);
+  });
+</script>

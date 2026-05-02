@@ -1,0 +1,61 @@
+---
+import { pagesById } from "../content/pages";
+
+interface Props {
+  /** id from content/pages.ts */
+  pageId: string;
+  /** Optional override for the eyebrow text */
+  eyebrow?: string;
+}
+
+const { pageId, eyebrow } = Astro.props;
+const meta = pagesById[pageId];
+if (!meta) throw new Error(`PageHeader: unknown pageId "${pageId}"`);
+---
+
+<header class="relative pt-16 pb-12 md:pt-24">
+  <!-- Planet color halo -->
+  <div
+    class="pointer-events-none absolute -top-24 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full opacity-20 blur-[120px]"
+    style={`background: radial-gradient(circle, ${meta.accent} 0%, ${meta.color} 50%, transparent 75%);`}
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="relative mx-auto flex max-w-6xl flex-col items-center px-6 text-center">
+    <!-- Mini planet -->
+    <span
+      class="relative mb-5 grid h-16 w-16 place-items-center rounded-full"
+      aria-hidden="true"
+      style={`view-transition-name: planet-${meta.id};`}
+    >
+      <span
+        class="absolute inset-0 rounded-full"
+        style={`background: radial-gradient(circle at 30% 30%, ${meta.accent}, ${meta.color} 60%, ${meta.color}aa 100%); box-shadow: 0 0 30px ${meta.color}80, inset -6px -6px 14px rgba(0,0,0,0.45);`}
+      ></span>
+      <span
+        class="absolute -inset-2 rounded-full border border-dashed opacity-40"
+        style={`border-color: ${meta.accent};`}
+      ></span>
+    </span>
+
+    <p
+      class="font-mono text-[10px] uppercase tracking-[0.5em]"
+      style={`color: ${meta.accent};`}
+    >
+      {eyebrow ?? `◦ ${meta.title}`}
+    </p>
+
+    <h1
+      class="mt-4 text-balance text-5xl leading-[0.95] md:text-7xl"
+      style={`view-transition-name: title-${meta.id};`}
+    >
+      <span class="text-gradient-silver">{meta.title.toLowerCase()}</span>
+      <span class="text-gradient-gold italic">.</span>
+    </h1>
+
+    <p class="mt-5 max-w-xl text-pretty text-silver-300/80 md:text-lg">
+      {meta.blurb}
+    </p>
+  </div>
+</header>

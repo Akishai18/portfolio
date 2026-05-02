@@ -1,0 +1,115 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { pagesById } from "../content/pages";
+import { profile } from "../content/profile";
+
+const meta = pagesById.about;
+
+const cards = [
+  {
+    label: "Mission",
+    body: "I'm a developer determined to push the boundaries of what's possible through technology. I believe many of the problems our world faces can be addressed with code — and I'm driven to build solutions that solve hard problems and make a difference.",
+  },
+  {
+    label: "Focus",
+    body: "Studying Software Engineering at the University of Waterloo. Alongside the technical work, I'm expanding into business and finance — and currently exploring machine learning and AI as a path into Quantitative Finance.",
+  },
+  {
+    label: "How I work",
+    body: "I love collaborative environments where I can use creativity to innovate and ship things that matter. I gravitate toward shared ownership, fast iteration, and ideas that make sense before they make money.",
+  },
+  {
+    label: "Outside the code",
+    body: "I lead student initiatives, run a tutoring business, and chase competitions across DECA, hackathons, and case comps. I'd rather be in the arena than at the sidelines.",
+  },
+];
+---
+
+<Layout title="About — Akishai" description={meta.blurb}>
+  <PageHeader pageId="about" />
+
+  <section class="mx-auto max-w-3xl px-6 pb-16">
+    <p class="text-balance text-2xl leading-relaxed text-silver-200 md:text-3xl">
+      Hey, I'm <span class="text-gradient-gold italic">Akishai</span> — an
+      ambitious Software Engineering student with a strong proclivity toward
+      <span class="text-gold-300">programming</span>,
+      <span class="text-gold-300">engineering</span>, and
+      <span class="text-gold-300">finance</span>.
+    </p>
+    <p class="mt-6 text-pretty text-base leading-relaxed text-silver-300/85 md:text-lg">
+      {profile.shortBio}
+    </p>
+  </section>
+
+  <section class="mx-auto max-w-5xl px-6 pb-20">
+    <ul class="grid gap-5 md:grid-cols-2" role="list">
+      {
+        cards.map((c, i) => (
+          <li
+            class="group relative overflow-hidden rounded-2xl border border-silver-600/20 bg-void-900/40 p-6 backdrop-blur-sm transition-all duration-300 hover:border-gold-500/40 hover:bg-void-900/60 md:p-8"
+            data-fade-in
+            style={`animation-delay: ${i * 80}ms`}
+          >
+            <div
+              class="pointer-events-none absolute -top-16 -right-16 h-44 w-44 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-50"
+              style="background: radial-gradient(circle, rgba(184,134,11,0.5), transparent 70%);"
+              aria-hidden="true"
+            />
+            <p class="relative font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400">
+              ◦ {c.label}
+            </p>
+            <p class="relative mt-4 text-base leading-relaxed text-silver-200/95 md:text-lg">
+              {c.body}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="mx-auto max-w-3xl px-6 pb-32">
+    <header class="mb-6">
+      <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400">
+        ◦ Currently building
+      </p>
+      <h2 class="mt-2 text-3xl md:text-4xl">
+        <span class="text-gradient-silver">In flight</span>
+        <span class="text-gradient-gold italic">.</span>
+      </h2>
+    </header>
+    <ul class="space-y-4" role="list">
+      {
+        profile.currentlyBuilding.map((item, i) => (
+          <li class="flex gap-4 rounded-xl border border-silver-600/20 bg-void-900/30 p-5">
+            <span class="font-mono text-xs text-gold-400 tabular-nums">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <p class="leading-relaxed text-silver-300/90">{item}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  [data-fade-in] {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: cardFade 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes cardFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-fade-in] {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,55 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import SocialLinks from "../components/SocialLinks.astro";
+import { pagesById } from "../content/pages";
+import { profile } from "../content/profile";
+
+const meta = pagesById.contact;
+---
+
+<Layout title="Contact — Akishai" description={meta.blurb}>
+  <PageHeader pageId="contact" />
+
+  <section class="mx-auto max-w-2xl px-6 pb-32 text-center">
+    <p class="text-balance text-xl leading-relaxed text-silver-200/95 md:text-2xl">
+      I'm always open to <span class="text-gold-300">opportunities</span>,
+      collaborations, and good conversations.
+    </p>
+    <p class="mt-3 text-silver-400">
+      The fastest way to reach me — pick a channel.
+    </p>
+
+    <a
+      href={profile.links.email}
+      data-magnetic
+      class="group mt-10 inline-flex items-center gap-3 rounded-full border border-gold-500/50 bg-gold-500/10 px-7 py-4 font-mono text-xs uppercase tracking-[0.3em] text-gold-300 transition hover:border-gold-300 hover:bg-gold-500/15 hover:text-gold-200"
+    >
+      <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current" aria-hidden="true">
+        <path d="M2 4.5h20A1.5 1.5 0 0 1 23.5 6v12a1.5 1.5 0 0 1-1.5 1.5H2A1.5 1.5 0 0 1 .5 18V6A1.5 1.5 0 0 1 2 4.5Zm10 9 9.4-6.27a.5.5 0 0 0-.55-.83L12 12 3.15 6.4a.5.5 0 0 0-.55.83L12 13.5Z" />
+      </svg>
+      {profile.email}
+      <span class="transition-transform group-hover:translate-x-1">→</span>
+    </a>
+
+    <div class="mt-12 flex flex-col items-center gap-4">
+      <span class="font-mono text-[10px] uppercase tracking-[0.4em] text-silver-500">
+        ◦ Or find me here ◦
+      </span>
+      <SocialLinks />
+    </div>
+
+    <a
+      href={profile.links.resume}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-magnetic
+      class="mt-12 inline-flex items-center gap-2 rounded-full border border-silver-500/30 px-6 py-3 font-mono text-xs uppercase tracking-[0.3em] text-silver-200 transition hover:border-silver-300/60 hover:bg-silver-100/5"
+    >
+      <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-current" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 1.5L18.5 8H14V3.5Z" />
+      </svg>
+      Download Resume
+    </a>
+  </section>
+</Layout>

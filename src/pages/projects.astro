@@ -1,0 +1,117 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { pagesById } from "../content/pages";
+import { projects } from "../content/portfolio";
+
+const meta = pagesById.projects;
+---
+
+<Layout title="Projects — Akishai" description={meta.blurb}>
+  <PageHeader pageId="projects" />
+
+  <section class="mx-auto max-w-7xl px-6 pb-32">
+    <ul class="grid gap-6 md:grid-cols-2 xl:grid-cols-3" role="list">
+      {
+        projects.map((p, i) => (
+          <li
+            class:list={[
+              "group relative flex flex-col overflow-hidden rounded-2xl border border-silver-600/20 bg-void-900/40 backdrop-blur-sm transition-all duration-500 hover:border-gold-500/50 hover:shadow-[0_0_40px_rgba(184,134,11,0.15)]",
+              p.featured && "xl:col-span-2",
+            ]}
+            style={`animation-delay: ${i * 60}ms`}
+            data-fade-in
+          >
+            {/* Image with subtle gold-tint overlay */}
+            <a
+              href={p.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-magnetic
+              class="relative block aspect-[16/10] overflow-hidden bg-void-800"
+              aria-label={`Open ${p.name}`}
+            >
+              <img
+                src={p.image}
+                alt={p.name}
+                loading="lazy"
+                decoding="async"
+                class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div
+                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-void-950 via-void-950/30 to-transparent"
+                aria-hidden="true"
+              />
+              <div
+                class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                style="background: radial-gradient(circle at 50% 30%, rgba(184,134,11,0.18), transparent 60%);"
+                aria-hidden="true"
+              />
+            </a>
+
+            {/* Body */}
+            <div class="flex flex-1 flex-col gap-4 p-6">
+              <div class="flex items-start justify-between gap-4">
+                <h3 class="text-2xl text-silver-100">
+                  <a
+                    href={p.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="transition-colors hover:text-gold-300"
+                  >
+                    {p.name}
+                  </a>
+                </h3>
+                <a
+                  href={p.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-magnetic
+                  class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-silver-500/30 text-silver-300 transition hover:border-gold-400 hover:text-gold-300"
+                  aria-label="Open project"
+                >
+                  <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 fill-none stroke-current" stroke-width="2">
+                    <path d="M7 17 L17 7 M9 7 H17 V15" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </a>
+              </div>
+
+              <p class="text-sm leading-relaxed text-silver-300/85">
+                {p.description}
+              </p>
+
+              <ul class="mt-auto flex flex-wrap gap-2 pt-2" role="list">
+                {p.tags.map((t) => (
+                  <li class="rounded-full border border-gold-500/30 bg-gold-500/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-gold-300">
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Layout>
+
+<style>
+  [data-fade-in] {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: cardFade 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes cardFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    [data-fade-in] {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+</style>
