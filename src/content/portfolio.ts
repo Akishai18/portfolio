@@ -351,7 +351,6 @@ export const projects: Project[] = [
     tags: ["Computer Vision", "OpenCV", "Generative AI"],
     image: "/img/projects/Pose.png",
     link: "https://github.com/Akishai18",
-    featured: true,
   },
   {
     name: "Pineapple Pathways",
