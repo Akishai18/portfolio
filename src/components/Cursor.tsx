@@ -136,9 +136,21 @@ export default function Cursor() {
     };
     raf = requestAnimationFrame(tick);
 
+    // Click ripple — brief gold ring at click point
+    const onClick = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      const ripple = document.createElement("div");
+      ripple.className = "cursor-ripple";
+      ripple.style.left = `${e.clientX}px`;
+      ripple.style.top = `${e.clientY}px`;
+      document.body.appendChild(ripple);
+      window.setTimeout(() => ripple.remove(), 700);
+    };
+
     window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("mouseover", onOver);
     window.addEventListener("mouseout", onOut);
+    window.addEventListener("click", onClick);
     document.addEventListener("mouseleave", onLeaveDoc);
 
     return () => {
@@ -146,6 +158,7 @@ export default function Cursor() {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseover", onOver);
       window.removeEventListener("mouseout", onOut);
+      window.removeEventListener("click", onClick);
       document.removeEventListener("mouseleave", onLeaveDoc);
       document.documentElement.classList.remove("has-custom-cursor");
     };

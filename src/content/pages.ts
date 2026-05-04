@@ -23,16 +23,6 @@ export type PageMeta = {
 
 export const pages: PageMeta[] = [
   {
-    id: "about",
-    title: "About",
-    href: "/about",
-    blurb: "The story behind the engineer.",
-    color: "#d4a85a",
-    accent: "#e6c275",
-    orbit: 1,
-    size: 0.85,
-  },
-  {
     id: "experience",
     title: "Experience",
     href: "/experience",

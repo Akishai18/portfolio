@@ -1,91 +1,31 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
+import RoleTimeline from "../components/RoleTimeline.astro";
 import { pagesById } from "../content/pages";
 import { educations } from "../content/portfolio";
 
 const meta = pagesById.education;
+
+// Adapt education entries to the shape RoleTimeline expects
+const educationRoles = educations.map((e) => ({
+  title: e.school,
+  org: e.degree,
+  date: e.date,
+  icon: e.icon,
+  iconBg: e.iconBg,
+  bullets: e.bullets,
+}));
 ---
 
 <Layout title="Education — Akishai" description={meta.blurb}>
   <PageHeader pageId="education" />
 
-  <section class="mx-auto max-w-4xl px-6 pb-32">
-    <ul class="space-y-8" role="list">
-      {
-        educations.map((e, i) => (
-          <li
-            class="group relative overflow-hidden rounded-3xl border border-silver-600/20 bg-void-900/40 p-6 backdrop-blur-sm transition-colors hover:border-gold-500/40 md:p-10"
-            style={`animation-delay: ${i * 90}ms`}
-            data-fade-in
-          >
-            <div
-              class="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full opacity-30 blur-3xl transition-opacity duration-500 group-hover:opacity-50"
-              style="background: radial-gradient(circle, rgba(184,134,11,0.5), transparent 70%);"
-              aria-hidden="true"
-            />
+  <RoleTimeline label="Education" heading="Academic foundation" roles={educationRoles} />
 
-            <div class="relative flex items-start gap-5">
-              <span
-                class="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-gold-500/40 shadow-[0_0_22px_rgba(184,134,11,0.25)] md:h-20 md:w-20"
-                style={`background-color: ${e.iconBg ?? "white"};`}
-                aria-hidden="true"
-              >
-                <img
-                  src={e.icon}
-                  alt=""
-                  class="h-12 w-12 object-contain md:h-16 md:w-16"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </span>
-
-              <div class="flex-1">
-                <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-500">
-                  {e.date}
-                </p>
-                <h3 class="mt-1 text-2xl text-silver-100 md:text-3xl">
-                  {e.school}
-                </h3>
-                <p class="mt-1 text-sm text-gold-300">{e.degree}</p>
-              </div>
-            </div>
-
-            <ul class="relative mt-6 space-y-2 text-sm text-silver-300/85 md:text-base" role="list">
-              {e.bullets.map((b) => (
-                <li class="flex gap-3 leading-relaxed">
-                  <span
-                    class="mt-2 block h-1 w-1 shrink-0 rounded-full bg-gold-500"
-                    aria-hidden="true"
-                  />
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
+  <div class="mx-auto max-w-4xl px-6 pb-32 text-center">
+    <p class="font-mono text-xs uppercase tracking-[0.3em] text-silver-500">
+      ◦ End of timeline ◦
+    </p>
+  </div>
 </Layout>
-
-<style>
-  [data-fade-in] {
-    opacity: 0;
-    transform: translateY(16px);
-    animation: cardFade 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-  }
-  @keyframes cardFade {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    [data-fade-in] {
-      opacity: 1;
-      transform: none;
-      animation: none;
-    }
-  }
-</style>
