@@ -60,6 +60,42 @@
   };
 
   /* ------------------------------------------------------------- */
+  /* Gravitational lens math.                                       */
+  /* For each drawn pixel within LENS_RADIUS of the cursor, pull    */
+  /* its position toward the cursor by an amount that follows a     */
+  /* bell curve (peak at ~35% radius, smoothly fading to zero at    */
+  /* center and edge — no hard ring artifacts).                     */
+  /* This is applied to every star, constellation node, line        */
+  /* segment, and comet head in the canvas render loop, so the      */
+  /* space background visibly bends around the cursor.              */
+  /* ------------------------------------------------------------- */
+  const LENS_RADIUS = 360;
+  const LENS_PULL = 80;
+
+  function lensX(x: number, y: number, cx: number, cy: number): number {
+    const dx = x - cx;
+    if (dx > LENS_RADIUS || dx < -LENS_RADIUS) return x;
+    const dy = y - cy;
+    if (dy > LENS_RADIUS || dy < -LENS_RADIUS) return x;
+    const r = Math.hypot(dx, dy);
+    if (r >= LENS_RADIUS || r < 0.5) return x;
+    const t = r / LENS_RADIUS;
+    const s = Math.exp(-Math.pow((t - 0.35) / 0.32, 2)) * (1 - Math.pow(t, 4));
+    return x - (dx / r) * s * LENS_PULL;
+  }
+  function lensY(x: number, y: number, cx: number, cy: number): number {
+    const dx = x - cx;
+    if (dx > LENS_RADIUS || dx < -LENS_RADIUS) return y;
+    const dy = y - cy;
+    if (dy > LENS_RADIUS || dy < -LENS_RADIUS) return y;
+    const r = Math.hypot(dx, dy);
+    if (r >= LENS_RADIUS || r < 0.5) return y;
+    const t = r / LENS_RADIUS;
+    const s = Math.exp(-Math.pow((t - 0.35) / 0.32, 2)) * (1 - Math.pow(t, 4));
+    return y - (dy / r) * s * LENS_PULL;
+  }
+
+  /* ------------------------------------------------------------- */
   /* Per-instance state — wrapped in factory so each setup() call  */
   /* gets fresh closures and we can cleanly cancel.                 */
   /* ------------------------------------------------------------- */
@@ -223,6 +259,13 @@
       const w = window.innerWidth;
       const h = window.innerHeight;
 
+      // Read current cursor position published by Cursor.tsx; default to
+      // very-far-away so when the cursor is absent (e.g. touch device,
+      // off-screen) the lens contributes nothing.
+      const W = window as Window & { __cursorX?: number; __cursorY?: number };
+      const cx = W.__cursorX ?? -10000;
+      const cy = W.__cursorY ?? -10000;
+
       if (!reduce) {
         nebulaPhase += 0.005;
         if (Math.round(nebulaPhase * 60) % 8 === 0) {
@@ -234,6 +277,7 @@
         }
       }
 
+      // ── Stars: lens each star's draw position toward the cursor ──
       for (const L of starLayers) {
         L.ctx.clearRect(0, 0, w, h);
         L.ctx.fillStyle = L.tint;
@@ -246,18 +290,21 @@
           const flicker = reduce ? 1 : 0.55 + 0.45 * Math.sin(s.tw);
           L.ctx.globalAlpha = s.a * flicker;
           L.ctx.beginPath();
-          L.ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          L.ctx.arc(lensX(s.x, s.y, cx, cy), lensY(s.x, s.y, cx, cy), s.r, 0, Math.PI * 2);
           L.ctx.fill();
         }
         L.ctx.globalAlpha = 1;
       }
 
+      // ── Constellation: each line is sub-segmented so it visibly BENDS
+      //    when it crosses the lens, and node positions are lensed too. ──
       if (conCtx) {
         conCtx.clearRect(0, 0, w, h);
         if (!reduce) {
           for (const n of conNodes) n.tw += 0.008;
         }
         conCtx.lineWidth = 0.6;
+        const SEG = 8; // sub-segments per line — more = smoother bend
         for (const link of conLinks) {
           const a = conNodes[link.a];
           const b = conNodes[link.b];
@@ -267,19 +314,27 @@
           const alpha = Math.max(0.03, 0.16 * fade * pulse);
           conCtx.strokeStyle = `rgba(184,134,11,${alpha})`;
           conCtx.beginPath();
-          conCtx.moveTo(a.x, a.y);
-          conCtx.lineTo(b.x, b.y);
+          for (let i = 0; i <= SEG; i++) {
+            const t = i / SEG;
+            const px = a.x + (b.x - a.x) * t;
+            const py = a.y + (b.y - a.y) * t;
+            const lx = lensX(px, py, cx, cy);
+            const ly = lensY(px, py, cx, cy);
+            if (i === 0) conCtx.moveTo(lx, ly);
+            else conCtx.lineTo(lx, ly);
+          }
           conCtx.stroke();
         }
         for (const n of conNodes) {
           const flicker = reduce ? 1 : 0.6 + 0.4 * Math.sin(n.tw);
           conCtx.fillStyle = `rgba(212,168,90,${0.55 * flicker})`;
           conCtx.beginPath();
-          conCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          conCtx.arc(lensX(n.x, n.y, cx, cy), lensY(n.x, n.y, cx, cy), n.r, 0, Math.PI * 2);
           conCtx.fill();
         }
       }
 
+      // ── Comets: lens the head and tail so they curve through the lens ──
       const front = starLayers[2];
       if (front) {
         maybeShootingStar();
@@ -292,12 +347,13 @@
           s.life++;
           const alpha = 1 - s.life / s.max;
           const tailLen = 14;
-          const grad = front.ctx.createLinearGradient(
-            s.x,
-            s.y,
-            s.x - s.vx * tailLen,
-            s.y - s.vy * tailLen,
-          );
+          const tailEndX = s.x - s.vx * tailLen;
+          const tailEndY = s.y - s.vy * tailLen;
+          const hx = lensX(s.x, s.y, cx, cy);
+          const hy = lensY(s.x, s.y, cx, cy);
+          const tx = lensX(tailEndX, tailEndY, cx, cy);
+          const ty = lensY(tailEndX, tailEndY, cx, cy);
+          const grad = front.ctx.createLinearGradient(hx, hy, tx, ty);
           grad.addColorStop(0, shotColor(s.hue, alpha));
           grad.addColorStop(0.6, shotColor(s.hue, alpha * 0.4));
           grad.addColorStop(1, shotColor(s.hue, 0));
@@ -305,12 +361,12 @@
           front.ctx.lineWidth = s.size;
           front.ctx.lineCap = "round";
           front.ctx.beginPath();
-          front.ctx.moveTo(s.x, s.y);
-          front.ctx.lineTo(s.x - s.vx * tailLen, s.y - s.vy * tailLen);
+          front.ctx.moveTo(hx, hy);
+          front.ctx.lineTo(tx, ty);
           front.ctx.stroke();
           front.ctx.fillStyle = shotColor(s.hue, alpha);
           front.ctx.beginPath();
-          front.ctx.arc(s.x, s.y, s.size * 1.1, 0, Math.PI * 2);
+          front.ctx.arc(hx, hy, s.size * 1.1, 0, Math.PI * 2);
           front.ctx.fill();
         }
       }

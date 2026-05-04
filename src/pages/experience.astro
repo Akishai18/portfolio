@@ -13,12 +13,14 @@ const meta = pagesById.experience;
 
   <RoleTimeline label="Work" heading="Engineering roles" roles={workExperience} />
 
-  {/* Subtle divider */}
-  <div class="mx-auto my-4 max-w-4xl px-6">
-    <span class="block h-px w-full bg-gradient-to-r from-transparent via-gold-500/30 to-transparent"></span>
-  </div>
-
-  <RoleTimeline label="Leadership" heading="Building communities" roles={leadership} />
+  <RoleTimeline
+    label="Leadership"
+    heading="Building communities"
+    roles={leadership}
+    defaultIconScale={0.78}
+    collapsible
+    initialCount={3}
+  />
 
   <div class="mx-auto max-w-4xl px-6 pb-32 text-center">
     <p class="font-mono text-xs uppercase tracking-[0.3em] text-silver-500">

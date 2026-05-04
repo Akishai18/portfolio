@@ -56,16 +56,30 @@ export type Role = {
   date: string;
   icon: string;
   iconBg?: string;
+  /** Override the default icon scale (1.18 fills + crops). Use <1 to inset
+   *  the logo with visible iconBg around it. */
+  iconScale?: number;
   bullets: string[];
 };
 
 export const workExperience: Role[] = [
   {
     title: "Software Engineering Intern",
+    org: "Quantified Health",
+    date: "Incoming · Summer 2026",
+    icon: "/img/company/reimagine_health_canada_logo.jpeg",
+    iconBg: "#4f46e5",
+    bullets: [
+      "Building scalable backend systems (Next.js, GraphQL, TypeScript) and DevOps infrastructure within a monorepo to power AI-driven telemedicine platforms serving 600+ patients monthly across Canadian healthcare.",
+    ],
+  },
+  {
+    title: "Software Engineering Intern",
     org: "North P&D",
     date: "Jun 2025 – Aug 2025",
     icon: "/img/company/northpnd.png",
     iconBg: "white",
+    iconScale: 0.78,
     bullets: [
       "Developed and optimized 15+ client features including a scalable marketplace platform and RESTful API integrations using PHP, Vue.js, Laravel, and MySQL — increasing site performance metrics by 30%.",
       "Built database-driven functionality supporting real-time updates for multiple clients, improving data retrieval efficiency by 20% and ensuring scalable performance under high traffic.",
@@ -90,6 +104,7 @@ export const workExperience: Role[] = [
     date: "Feb 2024 – Mar 2024",
     icon: "/img/company/Uoft.png",
     iconBg: "white",
+    iconScale: 0.78,
     bullets: [
       "Conducted research in tissue engineering and drug delivery, contributing to non-invasive systems for targeted therapeutic transport in complex tissue environments.",
       "Engineered and optimized 20+ hydrogel formulations, improving drug-loading efficiency 20% through controlled release studies and high-purity peptide synthesis.",
@@ -99,6 +114,29 @@ export const workExperience: Role[] = [
 ];
 
 export const leadership: Role[] = [
+  {
+    title: "Project Lead",
+    org: "UW Blueprint",
+    date: "Jan 2026 – Present",
+    icon: "/img/company/bp-logo.svg",
+    iconBg: "#2d7bdf",
+    bullets: [
+      "Leading a team of 8 developers building a full-stack platform for the Oakville & Milton Humane Society — owning technical direction, sprint planning, and client communication end-to-end.",
+      "Translating non-profit operational needs into product specs and architecture decisions, shipping software pro bono to amplify the impact of community organizations across the GTA.",
+    ],
+  },
+  {
+    title: "Founder",
+    org: "Nodaro",
+    date: "Sep 2025 – Present",
+    icon: "/img/company/nodaro_logo.jpeg",
+    iconBg: "#0a0a0a",
+    iconScale: 1.4,
+    bullets: [
+      "Co-founded Nodaro to close the hardware gap left by the software-startup boom — building tools, resources, and events that help student makers turn ideas into shipped, real-world hardware.",
+      "Currently building an AI-assisted prototype builder that accelerates hardware R&D — collapsing the loop from concept to working prototype so makers can iterate at software speeds.",
+    ],
+  },
   {
     title: "Board Member",
     org: "Career Chats",
@@ -174,7 +212,7 @@ export const leadership: Role[] = [
   {
     title: "Founder · Tutor",
     org: "Tutorly",
-    date: "Dec 2021 – Present",
+    date: "Dec 2021 – Jun 2025",
     icon: "/img/company/Tutorly.png",
     iconBg: "white",
     bullets: [

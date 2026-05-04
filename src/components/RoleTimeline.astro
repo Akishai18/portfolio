@@ -6,13 +6,30 @@ interface Props {
   /** Eyebrow + heading for the section */
   label: string;
   heading: string;
+  /** Default icon scale when a role doesn't override it. 1.18 fills + crops;
+   *  use a smaller value (e.g. 0.78) to inset every logo with iconBg around it. */
+  defaultIconScale?: number;
+  /** When true, only show `initialCount` rows initially with a "show more" toggle */
+  collapsible?: boolean;
+  /** Number of rows to show before the collapse cutoff. Defaults to 3. */
+  initialCount?: number;
 }
 
-const { roles, label, heading } = Astro.props;
+const {
+  roles,
+  label,
+  heading,
+  defaultIconScale = 1.18,
+  collapsible = false,
+  initialCount = 3,
+} = Astro.props;
+
+const showCollapse = collapsible && roles.length > initialCount;
+const hiddenCount = showCollapse ? roles.length - initialCount : 0;
 ---
 
 <section class="mx-auto max-w-4xl px-6 pb-20">
-  <header class="mb-12">
+  <header class="mb-14">
     <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400">
       ◦ {label}
     </p>
@@ -24,55 +41,333 @@ const { roles, label, heading } = Astro.props;
     </h2>
   </header>
 
-  <ul class="relative" role="list">
-    {/* The vertical thread */}
+  <ul class="relative" role="list" data-role-list>
+    {/* The vertical thread — centered behind the icon nodes */}
     <span
-      class="absolute left-4 top-2 bottom-2 w-px bg-gradient-to-b from-gold-500/40 via-silver-500/20 to-transparent md:left-6"
+      class="absolute left-6 top-2 bottom-2 w-px bg-gradient-to-b from-gold-500/40 via-silver-500/20 to-transparent md:left-8"
       aria-hidden="true"></span>
 
     {
-      roles.map((r) => (
-        <li class="relative flex gap-5 pb-12 last:pb-0 md:gap-8">
-          {/* Org icon node on the timeline */}
-          <div class="relative z-10 shrink-0">
-            <span
-              class="grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-gold-500/40 bg-void-900 shadow-[0_0_18px_rgba(184,134,11,0.25)] md:h-12 md:w-12"
-              aria-hidden="true"
-              style={`background-color: ${r.iconBg ?? "white"};`}
-            >
-              <img
-                src={r.icon}
-                alt=""
-                class="h-7 w-7 object-contain md:h-9 md:w-9"
-                loading="lazy"
-                decoding="async"
-              />
-            </span>
-          </div>
+      roles.map((r, i) => {
+        const isCurrent = /present/i.test(r.date);
+        const isIncoming = /incoming/i.test(r.date);
+        const isCollapsed = showCollapse && i >= initialCount;
+        return (
+          <li
+            class:list={[
+              "role-row group relative flex gap-5 pb-14 last:pb-0 md:gap-8",
+              isCollapsed && "is-collapsed",
+            ]}
+            style={`--role-delay: ${i * 80}ms;`}
+          >
+            {/* Org icon node on the timeline. The image is sized larger
+                than the circular wrapper and uses object-cover, so the
+                logo fills the entire circle edge-to-edge — overflow is
+                clipped by the wrapper's overflow-hidden + rounded-full,
+                no background color needed. */}
+            <div class="relative z-10 shrink-0">
+              <span
+                class="role-icon relative grid h-12 w-12 place-items-center overflow-hidden rounded-full border border-gold-500/40 shadow-[0_0_18px_rgba(184,134,11,0.22)] transition md:h-16 md:w-16"
+                style={r.iconBg ? `background-color: ${r.iconBg};` : ""}
+                aria-hidden="true"
+              >
+                <img
+                  src={r.icon}
+                  alt=""
+                  class="h-full w-full object-cover"
+                  style={`transform: scale(${r.iconScale ?? defaultIconScale});`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
+            </div>
 
-          <div class="flex-1 pt-1">
-            <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-500">
-              {r.date}
-            </p>
-            <h3 class="mt-1 text-xl text-silver-100 md:text-2xl">
-              {r.title}
-            </h3>
-            <p class="mt-0.5 text-sm text-gold-300">{r.org}</p>
+            {/* Body */}
+            <div class="role-body relative flex-1 pt-1">
+              {/* Date with optional "live" / "incoming" indicator */}
+              <div class="flex items-center gap-2">
+                {isCurrent && <span class="live-dot" aria-hidden="true" />}
+                {isIncoming && <span class="incoming-dot" aria-hidden="true" />}
+                <p
+                  class:list={[
+                    "font-mono text-[10px] uppercase tracking-[0.3em] transition-colors",
+                    isIncoming
+                      ? "text-gold-300/90"
+                      : "text-silver-500 group-hover:text-silver-400",
+                  ]}
+                >
+                  {r.date}
+                </p>
+              </div>
 
-            <ul class="mt-4 space-y-2 text-sm text-silver-300/85" role="list">
-              {r.bullets.map((b) => (
-                <li class="flex gap-3 leading-relaxed">
-                  <span
-                    class="mt-2 block h-1 w-1 shrink-0 rounded-full bg-gold-500"
-                    aria-hidden="true"
-                  />
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </li>
-      ))
+              {/* Title */}
+              <h3 class="mt-2 text-xl leading-tight text-silver-100 md:text-2xl transition-colors group-hover:text-gold-50">
+                {r.title}
+              </h3>
+
+              {/* Org with a subtle mono "@" prefix */}
+              <p class="mt-1 text-sm md:text-[15px]">
+                <span class="font-mono text-gold-500/55">@</span>
+                <span class="ml-1 text-gold-300 transition-colors group-hover:text-gold-200">
+                  {r.org}
+                </span>
+              </p>
+
+              {/* Bullets */}
+              <ul
+                class="mt-5 space-y-2.5 text-sm leading-relaxed text-silver-300/85 md:text-[15px]"
+                role="list"
+              >
+                {r.bullets.map((b) => (
+                  <li class="flex gap-3">
+                    <span
+                      class="bullet-dot mt-2 block h-1 w-1 shrink-0 rounded-full bg-gold-500"
+                      aria-hidden="true"
+                    />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        );
+      })
     }
   </ul>
+
+  {showCollapse && (
+    <div class="mt-4 flex justify-center">
+      <button
+        type="button"
+        class="expand-btn group/btn"
+        data-expand-btn
+        aria-expanded="false"
+      >
+        <span class="btn-rule" aria-hidden="true"></span>
+        <span class="btn-label">
+          Show <span class="btn-count">{hiddenCount}</span> more
+        </span>
+        <span class="btn-arrow" aria-hidden="true">↓</span>
+        <span class="btn-rule" aria-hidden="true"></span>
+      </button>
+    </div>
+  )}
 </section>
+
+<script>
+  function initRoleCollapse() {
+    document.querySelectorAll<HTMLButtonElement>("[data-expand-btn]").forEach(
+      (btn) => {
+        if (btn.dataset.bound) return;
+        btn.dataset.bound = "1";
+        btn.addEventListener("click", () => {
+          const section = btn.closest("section");
+          const list = section?.querySelector<HTMLElement>("[data-role-list]");
+          if (!list) return;
+
+          const hidden = list.querySelectorAll<HTMLElement>(".is-collapsed");
+          hidden.forEach((row, i) => {
+            row.classList.remove("is-collapsed");
+            row.style.setProperty("--reveal-delay", `${i * 70}ms`);
+            row.classList.add("is-revealing");
+          });
+
+          btn.setAttribute("aria-expanded", "true");
+          btn.classList.add("is-fading");
+          window.setTimeout(() => btn.parentElement?.remove(), 360);
+        });
+      },
+    );
+  }
+  initRoleCollapse();
+  document.addEventListener("astro:page-load", initRoleCollapse);
+</script>
+
+<style>
+  /* Stagger fade-in on initial load */
+  .role-row {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: roleFade 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: var(--role-delay, 0ms);
+  }
+  @keyframes roleFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Hover lift on the icon node — soft glow brightens, ring intensifies */
+  .role-row:hover .role-icon {
+    border-color: rgba(212, 168, 90, 0.75);
+    box-shadow:
+      0 0 26px rgba(184, 134, 11, 0.35),
+      inset 0 0 12px rgba(212, 168, 90, 0.18);
+    transform: scale(1.04);
+    transition:
+      border-color 260ms ease,
+      box-shadow 260ms ease,
+      transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Subtle gold gradient background that fades in behind the role body
+     on hover — makes the row feel like a deliberate card without adding
+     a hard border. */
+  .role-body::before {
+    content: "";
+    position: absolute;
+    inset: -8px -16px;
+    border-radius: 14px;
+    background: linear-gradient(
+      90deg,
+      rgba(184, 134, 11, 0.06) 0%,
+      rgba(184, 134, 11, 0.02) 40%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .role-row:hover .role-body::before {
+    opacity: 1;
+  }
+
+  /* Bullet dot brightens on row hover */
+  .bullet-dot {
+    transition: background-color 260ms ease, box-shadow 260ms ease;
+  }
+  .role-row:hover .bullet-dot {
+    background-color: #e6c275;
+    box-shadow: 0 0 6px rgba(212, 168, 90, 0.6);
+  }
+
+  /* "Live" indicator — small green pulsing dot for currently active roles */
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: #22c55e;
+    box-shadow:
+      0 0 8px rgba(34, 197, 94, 0.7),
+      0 0 14px rgba(34, 197, 94, 0.35);
+    animation: livePulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  /* "Incoming" indicator — slow gold pulse for upcoming roles */
+  .incoming-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #e6c275, #b8860b);
+    box-shadow:
+      0 0 8px rgba(212, 168, 90, 0.75),
+      0 0 16px rgba(184, 134, 11, 0.45);
+    animation: livePulse 2.6s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.55; transform: scale(0.85); }
+  }
+
+  /* Collapsed leadership rows — hidden until the user expands */
+  .role-row.is-collapsed {
+    display: none !important;
+  }
+  /* When revealed via the toggle, fade them in with a fresh stagger.
+     This is a separate keyframe from `roleFade` because the page-load
+     animation has already finished by the time the user clicks expand. */
+  .role-row.is-revealing {
+    animation: roleReveal 600ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+  @keyframes roleReveal {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Expand button — gold rule + mono label, bracketed by hairlines so it
+     reads as a deliberate chapter break rather than a generic CTA */
+  .expand-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.55rem 1rem;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: rgba(212, 168, 90, 0.7);
+    transition:
+      color 260ms ease,
+      transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 320ms ease;
+  }
+  .expand-btn:hover {
+    color: rgba(230, 194, 117, 1);
+  }
+  .expand-btn .btn-rule {
+    display: block;
+    width: 36px;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(212, 168, 90, 0.45),
+      transparent
+    );
+    transition: width 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .expand-btn:hover .btn-rule {
+    width: 56px;
+  }
+  .expand-btn .btn-count {
+    color: rgba(230, 194, 117, 0.95);
+    font-weight: 600;
+  }
+  .expand-btn .btn-arrow {
+    display: inline-block;
+    transform: translateY(0);
+    transition: transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .expand-btn:hover .btn-arrow {
+    transform: translateY(3px);
+  }
+  .expand-btn.is-fading {
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .role-row {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    .role-row.is-revealing {
+      animation: none;
+    }
+    .live-dot,
+    .incoming-dot {
+      animation: none;
+    }
+    .expand-btn,
+    .expand-btn .btn-rule,
+    .expand-btn .btn-arrow {
+      transition: none;
+    }
+  }
+</style>

@@ -7,6 +7,11 @@ import { useEffect, useRef, useState } from "react";
  *   - Magnetic snap on [data-magnetic], <a>, <button>
  *   - Morph to ship glyph on [data-planet]
  *   - Disabled on coarse pointers and prefers-reduced-motion
+ *
+ * The gravitational-lens warping of the starfield background is implemented
+ * directly inside Starfield.astro's canvas render loop — see the lens()
+ * helper there. This component just exposes the cursor position to the
+ * starfield via window.__cursorX / __cursorY.
  */
 
 type Mode = "default" | "hover" | "ship";
@@ -48,6 +53,10 @@ export default function Cursor() {
     const onMove = (e: MouseEvent) => {
       target.current.x = e.clientX;
       target.current.y = e.clientY;
+      // Publish cursor position globally so Starfield's canvas render
+      // loop can read it for the gravitational-lens displacement math.
+      (window as Window & { __cursorX?: number; __cursorY?: number }).__cursorX = e.clientX;
+      (window as Window & { __cursorX?: number; __cursorY?: number }).__cursorY = e.clientY;
     };
 
     const isInteractive = (el: Element | null): HTMLElement | null => {

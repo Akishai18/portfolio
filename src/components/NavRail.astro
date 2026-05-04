@@ -8,7 +8,7 @@ const isHome = path === "/";
 ---
 
 <aside
-  class="nav-rail pointer-events-none fixed inset-y-0 left-0 z-40 hidden w-[180px] flex-col justify-between px-7 py-8 md:flex"
+  class="nav-rail pointer-events-none fixed inset-y-0 left-0 z-40 hidden w-[210px] flex-col justify-between px-7 py-8 md:flex"
   aria-label="Primary navigation"
 >
   {/* Brand / home */}
@@ -43,7 +43,7 @@ const isHome = path === "/";
 
   {/* Page links — vertical, lowercase, sparse */}
   <nav class="pointer-events-auto" aria-label="Pages">
-    <ul class="flex flex-col gap-4" role="list">
+    <ul class="flex flex-col gap-7" role="list">
       {
         pages.map((p) => {
           const active = path === p.href;
@@ -54,43 +54,39 @@ const isHome = path === "/";
                 data-magnetic
                 aria-current={active ? "page" : undefined}
                 class:list={[
-                  "group relative flex items-center gap-3 font-display text-lg tracking-[0.01em] transition-all",
-                  active
-                    ? "text-gold-200"
-                    : "text-silver-300/70 hover:text-silver-100",
+                  "rail-link group relative flex items-center gap-3.5 font-display text-2xl tracking-[0.01em]",
+                  active ? "is-active text-gold-200" : "text-silver-300/70 hover:text-silver-100",
                 ]}
               >
-                {/* Planet glyph */}
+                {/* Planet glyph — gains a faint orbit ring when active */}
                 <span
                   class:list={[
-                    "relative grid h-3 w-3 shrink-0 place-items-center transition-transform",
-                    active ? "scale-125" : "group-hover:scale-110",
+                    "rail-planet relative grid h-3.5 w-3.5 shrink-0 place-items-center",
                   ]}
                   style={`view-transition-name: rail-planet-${p.id};`}
                   aria-hidden="true"
                 >
                   <span
-                    class="absolute inset-0 rounded-full"
-                    style={`background: radial-gradient(circle at 30% 30%, ${p.accent}, ${p.color} 70%); box-shadow: 0 0 ${active ? "10px" : "5px"} ${p.color}${active ? "cc" : "66"};`}
+                    class="rail-planet-orb absolute inset-0 rounded-full"
+                    style={`background: radial-gradient(circle at 30% 30%, ${p.accent}, ${p.color} 70%); box-shadow: 0 0 ${active ? "10px" : "4px"} ${p.color}${active ? "cc" : "55"};`}
+                  ></span>
+                  <span
+                    class="rail-planet-ring absolute -inset-[3px] rounded-full"
+                    style={`border: 1px solid ${p.color}55;`}
                   ></span>
                 </span>
 
-                <span
-                  class:list={[
-                    "lowercase transition-all",
-                    active ? "italic" : "",
-                  ]}
-                >
+                {/* Title with animated underline */}
+                <span class="rail-title relative lowercase">
                   {p.title}
+                  <span class="rail-underline" aria-hidden="true"></span>
                 </span>
 
-                {/* Active indicator dash */}
-                {active && (
-                  <span
-                    class="ml-1 inline-block h-px w-4 bg-gradient-to-r from-gold-400 to-transparent"
-                    aria-hidden="true"
-                  />
-                )}
+                {/* Hover/active chevron — slides in from the left */}
+                <span
+                  class="rail-chevron font-mono text-xs text-gold-300"
+                  aria-hidden="true"
+                >→</span>
               </a>
             </li>
           );
@@ -225,3 +221,91 @@ const isHome = path === "/";
     }
   </nav>
 </header>
+
+<style>
+  /* --- Page links ---------------------------------------------------- */
+  .rail-link {
+    transition: color 220ms ease;
+  }
+
+  /* Title slides ~4px right on hover so the row feels responsive */
+  .rail-title {
+    display: inline-block;
+    transition: transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .rail-link:hover .rail-title {
+    transform: translateX(4px);
+  }
+  .rail-link.is-active {
+    font-style: italic;
+  }
+
+  /* Animated gold underline beneath the title — grows from left on hover,
+     stays at full width when the page is active. */
+  .rail-underline {
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    height: 1px;
+    width: 0;
+    background: linear-gradient(
+      to right,
+      rgba(212, 168, 90, 0.9) 0%,
+      rgba(212, 168, 90, 0.4) 70%,
+      rgba(212, 168, 90, 0) 100%
+    );
+    transition: width 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .rail-link:hover .rail-underline {
+    width: 60%;
+  }
+  .rail-link.is-active .rail-underline {
+    width: 100%;
+  }
+
+  /* Right-side chevron that slides in on hover or active */
+  .rail-chevron {
+    opacity: 0;
+    transform: translateX(-6px);
+    transition:
+      opacity 240ms ease,
+      transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .rail-link:hover .rail-chevron,
+  .rail-link.is-active .rail-chevron {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Planet glyph ring — appears around active item like a selected orbit */
+  .rail-planet-orb {
+    transition: box-shadow 260ms ease, transform 260ms ease;
+  }
+  .rail-link:hover .rail-planet-orb {
+    transform: scale(1.12);
+  }
+  .rail-link.is-active .rail-planet-orb {
+    transform: scale(1.18);
+  }
+  .rail-planet-ring {
+    opacity: 0;
+    transform: scale(0.7);
+    transition:
+      opacity 280ms ease,
+      transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .rail-link.is-active .rail-planet-ring {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rail-title,
+    .rail-underline,
+    .rail-chevron,
+    .rail-planet-orb,
+    .rail-planet-ring {
+      transition: none;
+    }
+  }
+</style>
