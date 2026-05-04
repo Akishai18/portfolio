@@ -417,3 +417,149 @@ export const projects: Project[] = [
     link: "https://github.com/Akishai18/Tetris-Reloaded",
   },
 ];
+
+/* --------------------------------------------------------------- */
+/* Awards & Recognition                                              */
+/* --------------------------------------------------------------- */
+
+export type Award = {
+  name: string;
+  org: string;
+  year: string;
+  category: "featured" | "provincial" | "other";
+  /** Quantitative tag — placement, percentage, dollar amount, etc. */
+  value?: string;
+  /** Optional one-line context */
+  note?: string;
+};
+
+export const awardCategoryLabels: Record<Award["category"], string> = {
+  featured: "Top Honors",
+  provincial: "Provincial",
+  other: "Honors & Scholarships",
+};
+
+export const awards: Award[] = [
+  // ── Top Honors ── International DECA + IMC + Research/Publications
+  {
+    name: "First Place International Champion · Financial Consulting",
+    org: "DECA · ICDC",
+    year: "2025",
+    category: "featured",
+    value: "1st · World",
+    note: "Out of thousands of competitors from 30+ countries — top global performance across role-play, written exam, and presentation.",
+  },
+  {
+    name: "Second Place International Champion · Financial Consulting",
+    org: "DECA · ICDC",
+    year: "2024",
+    category: "featured",
+    value: "2nd · World",
+  },
+  {
+    name: "Top 10 International Finalist · Financial Consulting",
+    org: "DECA · ICDC",
+    year: "2024 · 2025",
+    category: "featured",
+    value: "Top 10 · ×2",
+  },
+  {
+    name: "IMC Prosperity Algorithmic Trading · Finalist",
+    org: "IMC Trading",
+    year: "2025",
+    category: "featured",
+    value: "Top 7% · 22K+",
+    note: "Advanced to the finals of IMC's global algorithmic trading competition, placing in the top 7% of 22,000+ competitors worldwide.",
+  },
+  {
+    name: "Published CS Paper on P vs NP",
+    org: "The STEM Spectrum",
+    year: "2024",
+    category: "featured",
+    value: "8% select · 15K reads",
+    note: "Selected from a competitive submission pool; distributed to 15,000+ readers across the journal's audience.",
+  },
+  {
+    name: "Published Mathematics Paper",
+    org: "Oxford Math Essay Writing Contest",
+    year: "2024",
+    category: "featured",
+    note: "Original mathematics essay published through the Oxford competition.",
+  },
+  {
+    name: "Quantum School For Young Students (QSYS)",
+    org: "Institute for Quantum Computing · University of Waterloo",
+    year: "2024",
+    category: "featured",
+    note: "Selective research program in quantum information science alongside leading IQC researchers.",
+  },
+  {
+    name: "Schulich Leader Nominee",
+    org: "Schulich Foundation",
+    year: "2025",
+    category: "featured",
+    note: "Nominated for Canada's most prestigious undergraduate STEM scholarship.",
+  },
+
+  // ── Provincial ── DECA Ontario
+  {
+    name: "Provincial Champion · Financial Consulting",
+    org: "DECA Ontario",
+    year: "2024 · 2025",
+    category: "provincial",
+    value: "1st · Ontario · ×2",
+    note: "Back-to-back provincial champion in financial consulting at DECA Ontario.",
+  },
+  {
+    name: "Top 10 Provincial Finalist · Financial Consulting",
+    org: "DECA Ontario",
+    year: "2024 · 2025",
+    category: "provincial",
+    value: "Top 10 · ×2",
+  },
+
+  // ── Honors & Scholarships ── everything else
+  {
+    name: "Total Scholarship Offers",
+    org: "Universities & institutions",
+    year: "2025",
+    category: "other",
+    value: "$220,000+",
+    note: "Across multiple admission and merit-based scholarship offers.",
+  },
+  {
+    name: "Euclid Math Contest · School Champion",
+    org: "CEMC · University of Waterloo",
+    year: "2024",
+    category: "other",
+    value: "1st · School",
+  },
+  {
+    name: "Engineering Society Leadership Excellence Award",
+    org: "University of Waterloo",
+    year: "2025",
+    category: "other",
+    value: "$1,000",
+  },
+  {
+    name: "Top Ontario Scholar",
+    org: "Ontario Ministry of Education",
+    year: "2025",
+    category: "other",
+    value: "99% avg",
+  },
+  {
+    name: "Karla Bailey Trustee Award",
+    org: "Peel District School Board",
+    year: "2025",
+    category: "other",
+    note: "Trustee award recognizing academic excellence and community contribution.",
+  },
+  {
+    name: "Honour Standing · Honor Roll",
+    org: "Castlebrooke Secondary School",
+    year: "2021–2025",
+    category: "other",
+    note: "Top academic standing maintained Grades 9–12.",
+  },
+];

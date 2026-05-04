@@ -63,14 +63,14 @@ export const pages: PageMeta[] = [
     size: 1.0,
   },
   {
-    id: "contact",
-    title: "Contact",
-    href: "/contact",
-    blurb: "Let's talk.",
-    color: "#c0c5ce",
-    accent: "#f4f5f7",
+    id: "awards",
+    title: "Awards",
+    href: "/awards",
+    blurb: "Recognition collected along the way.",
+    color: "#a05a14",
+    accent: "#e8a960",
     orbit: 6,
-    size: 0.8,
+    size: 0.85,
   },
 ];
 

@@ -1,0 +1,207 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { pagesById } from "../content/pages";
+import { awards, awardCategoryLabels, type Award } from "../content/portfolio";
+
+const meta = pagesById.awards;
+
+// Group awards by category, preserving the order in awardCategoryLabels
+const grouped = (Object.keys(awardCategoryLabels) as Award["category"][]).map(
+  (key) => ({
+    key,
+    label: awardCategoryLabels[key],
+    items: awards.filter((a) => a.category === key),
+  })
+);
+
+const totalCount = awards.length;
+---
+
+<Layout title="Awards — Akishai" description={meta.blurb}>
+  <PageHeader pageId="awards" />
+
+  <section class="mx-auto max-w-5xl px-6 pb-32">
+    {/* Top stats strip — total count + small flourish */}
+    <div class="mb-14 flex items-center gap-4">
+      <span
+        class="h-px flex-1 bg-gradient-to-r from-transparent to-gold-500/40"
+      ></span>
+      <span class="font-mono text-[10px] uppercase tracking-[0.45em] text-gold-300/85">
+        {String(totalCount).padStart(2, "0")} · accolades
+      </span>
+      <span
+        class="h-px flex-1 bg-gradient-to-l from-transparent to-gold-500/40"
+      ></span>
+    </div>
+
+    <div class="space-y-16">
+      {
+        grouped.map((group, gi) => (
+          <div data-fade-in style={`animation-delay: ${gi * 100}ms`}>
+            {/* Category header */}
+            <header class="mb-7 flex items-baseline gap-4">
+              <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-300/90">
+                ◦ {group.label}
+              </p>
+              <span class="h-px flex-1 bg-gradient-to-r from-gold-500/35 via-gold-500/12 to-transparent" />
+              <span class="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-500">
+                {String(group.items.length).padStart(2, "0")}
+              </span>
+            </header>
+
+            <ul class="grid gap-4 md:grid-cols-2" role="list">
+              {group.items.map((award, i) => (
+                <li
+                  class="award-card group relative flex gap-5 overflow-hidden rounded-xl border border-gold-500/15 bg-void-900/40 p-5 backdrop-blur-sm transition-all duration-500 hover:border-gold-400/55 hover:shadow-[0_0_36px_rgba(232,169,96,0.14)] md:p-6"
+                  style={`--row-delay: ${i * 70}ms`}
+                >
+                  {/* Medallion — gold ring with engraved year */}
+                  <span class="medal relative grid h-14 w-14 shrink-0 place-items-center md:h-16 md:w-16">
+                    <span
+                      class="medal-orb absolute inset-0 rounded-full"
+                      aria-hidden="true"
+                    />
+                    <span
+                      class="medal-ring absolute -inset-1 rounded-full"
+                      aria-hidden="true"
+                    />
+                    <span class="relative font-mono text-[10px] uppercase tracking-[0.2em] text-gold-300 md:text-[11px]">
+                      {award.year}
+                    </span>
+                  </span>
+
+                  {/* Body */}
+                  <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <div class="flex items-start justify-between gap-3">
+                      <h3 class="text-base font-medium leading-tight text-silver-100 transition-colors group-hover:text-gold-300 md:text-[17px]">
+                        {award.name}
+                      </h3>
+                      {award.value && (
+                        <span class="shrink-0 rounded-full border border-gold-500/35 bg-gold-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-gold-300">
+                          {award.value}
+                        </span>
+                      )}
+                    </div>
+
+                    <p class="text-sm text-silver-400/85">
+                      <span class="font-mono text-gold-400/55">@</span>
+                      <span class="ml-1 transition-colors group-hover:text-silver-300">
+                        {award.org}
+                      </span>
+                    </p>
+
+                    {award.note && (
+                      <p class="mt-1.5 text-xs leading-relaxed text-silver-300/65">
+                        {award.note}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Decorative corner flourish — subtle gold seal */}
+                  <span
+                    class="seal pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-40 transition-opacity duration-500 group-hover:opacity-100"
+                    aria-hidden="true"
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+
+    {/* Bottom flourish */}
+    <div class="mt-20 text-center">
+      <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-silver-500">
+        ◦ Onward ◦
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Medallion — layered radial gradient ring with metallic feel */
+  .medal-orb {
+    background: radial-gradient(
+      circle at 35% 30%,
+      rgba(232, 169, 96, 0.35) 0%,
+      rgba(160, 90, 20, 0.25) 45%,
+      rgba(40, 20, 4, 0.55) 100%
+    );
+    border: 1px solid rgba(232, 169, 96, 0.45);
+    box-shadow:
+      inset 0 0 14px rgba(232, 169, 96, 0.18),
+      0 0 16px rgba(232, 169, 96, 0.12);
+    transition:
+      box-shadow 320ms ease,
+      transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .medal-ring {
+    border: 1px dashed rgba(232, 169, 96, 0.35);
+    opacity: 0.7;
+    transition:
+      transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 320ms ease;
+  }
+  .award-card:hover .medal-orb {
+    box-shadow:
+      inset 0 0 16px rgba(232, 169, 96, 0.32),
+      0 0 26px rgba(232, 169, 96, 0.32);
+    transform: scale(1.06);
+  }
+  .award-card:hover .medal-ring {
+    transform: rotate(180deg);
+    opacity: 1;
+  }
+
+  /* Decorative seal in the top-right corner — radial gold wash */
+  .seal {
+    background: radial-gradient(
+      circle,
+      rgba(232, 169, 96, 0.18) 0%,
+      rgba(232, 169, 96, 0.06) 40%,
+      transparent 70%
+    );
+  }
+
+  /* Stagger fade-in for each category group */
+  [data-fade-in] {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: awardFade 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes awardFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Per-row staggered fade — kicks in after the group reveals */
+  .award-card {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: rowFade 600ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--row-delay, 0ms) + 200ms);
+  }
+  @keyframes rowFade {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-fade-in],
+    .award-card {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+    .medal-orb,
+    .medal-ring {
+      transition: none;
+    }
+  }
+</style>

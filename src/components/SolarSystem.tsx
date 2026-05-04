@@ -261,15 +261,15 @@ const visuals: Record<string, PlanetVisual> = {
     metal: 0.18,
     deep: "#3a2a06",
   },
-  contact: {
-    // Icy / glacial
-    bandFreq: 6,
-    bandAmount: 0.18,
-    noiseAmount: 0.55,
-    noiseScale: 7.5,
-    atmosphere: 0.72,
-    metal: 0.45,
-    deep: "#8a8f98",
+  awards: {
+    // Lustrous bronze / honey-amber, metallic luster
+    bandFreq: 8,
+    bandAmount: 0.32,
+    noiseAmount: 0.48,
+    noiseScale: 5.5,
+    atmosphere: 0.55,
+    metal: 0.65,
+    deep: "#5c2f08",
   },
 };
 
