@@ -11,6 +11,9 @@ export type Skill = {
   name: string;
   icon: string;
   category: "languages" | "frameworks" | "tools";
+  /** Per-icon size override. 1 = default for the category. Use e.g. 1.2 to
+   *  bump a logo that reads small, or 0.85 to dial one back. */
+  iconScale?: number;
 };
 
 export const skills: Skill[] = [
@@ -20,8 +23,7 @@ export const skills: Skill[] = [
   { name: "JavaScript", icon: "/img/tech/javascript.png", category: "languages" },
   { name: "C / C++", icon: "/img/tech/C.png", category: "languages" },
   { name: "PHP", icon: "/img/tech/php.png", category: "languages" },
-  { name: "HTML 5", icon: "/img/tech/html.png", category: "languages" },
-  { name: "CSS", icon: "/img/tech/css.png", category: "languages" },
+  { name: "Elixir", icon: "/img/tech/Elixir_programming_language_logo.svg-2.png", category: "languages" },
 
   // Frameworks (frontend + backend + ML libs)
   { name: "React", icon: "/img/tech/reactjs.png", category: "frameworks" },
@@ -31,12 +33,17 @@ export const skills: Skill[] = [
   { name: "Flask", icon: "/img/tech/flask.png", category: "frameworks" },
   { name: "Laravel", icon: "/img/tech/Laravel.png", category: "frameworks" },
   { name: "Scikit-learn", icon: "/img/tech/sci-kit.png", category: "frameworks" },
+  { name: "Pandas", icon: "/img/tech/pandas.png", category: "frameworks" },
+  { name: "NumPy", icon: "/img/tech/numpy-image.svg", category: "frameworks" },
 
   // Infrastructure & Tools (DB, version control, hardware, ops)
+  { name: "PostgreSQL", icon: "/img/tech/postgres.png", category: "tools" },
   { name: "MySQL", icon: "/img/tech/mysql.png", category: "tools" },
+  { name: "GraphQL", icon: "/img/tech/graphql.svg.png", category: "tools" },
+  { name: "Supabase", icon: "/img/tech/supabase.png", category: "tools", iconScale: 1.4 },
+  { name: "Docker", icon: "/img/tech/docker.png", category: "tools" },
   { name: "Git", icon: "/img/tech/git.png", category: "tools" },
   { name: "Arduino", icon: "/img/tech/arduino.png", category: "tools" },
-  { name: "Excel", icon: "/img/tech/Excell.png", category: "tools" },
   { name: "Google Cybersecurity Cert.", icon: "/img/tech/google.png", category: "tools" },
 ];
 
@@ -257,6 +264,7 @@ export type Education = {
   date: string;
   icon: string;
   iconBg?: string;
+  iconScale?: number;
   bullets: string[];
 };
 
@@ -272,8 +280,16 @@ export const educations: Education[] = [
       "President's Scholarship of Distinction ($5,000), Software Engineering Scholarship ($4,000), and external scholarships totaling $15,000+",
       "Engineering Society Leadership Excellence Award ($1,000)",
       "Coursework: Calculus I/II, Linear Algebra, Software Engineering Principles, Programming Principles, Discrete Math, Digital / Linear Circuits, Data Abstraction",
-      "Firmware Engineer at UWaterloo Formula Electric Team",
-      "Director of Web Development at the Engineering Society",
+    ],
+  },
+  {
+    school: "Y Combinator Startup School",
+    degree: "Technical Builder Cohort · San Francisco, CA",
+    date: "Jul 2026",
+    icon: "/img/company/Y_Combinator_logo.svg",
+    bullets: [
+      "Selected to a hyper-curated cohort of top technical builders (~2% acceptance rate) for YC's in-person Startup School program in San Francisco — small-group sessions with YC partners on ideation, MVP development, and early-stage validation.",
+      "Built alongside founders backed by Y Combinator and engaged directly with the partners, mentors, and operators who have shipped some of the most impactful companies of the last two decades.",
     ],
   },
   {

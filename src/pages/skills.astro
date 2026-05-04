@@ -34,18 +34,25 @@ const grouped = (Object.keys(skillCategoryLabels) as Skill["category"][]).map(
             </header>
 
             <ul
-              class="grid grid-cols-3 gap-y-8 sm:grid-cols-4 md:grid-cols-7"
+              class="flex flex-wrap justify-center gap-x-4 gap-y-8 md:gap-x-6"
               role="list"
             >
               {group.items.map((s, i) => (
                 <li
-                  class="tilt group relative flex aspect-square flex-col items-center justify-center gap-3"
+                  class="tilt group relative flex aspect-square w-[88px] flex-col items-center justify-center gap-3 md:w-[112px]"
                   data-tilt
                   data-magnetic
                 >
-                  {/* Outer wrapper — handles 3D parallax (Z-lift on hover) */}
+                  {/* Outer wrapper — handles 3D parallax (Z-lift on hover).
+                      Languages render larger as the headline category;
+                      frameworks + tools are denser, so icons are smaller. */}
                   <span
-                    class="tilt-icon h-16 w-16 md:h-20 md:w-20"
+                    class:list={[
+                      "tilt-icon",
+                      group.key === "languages"
+                        ? "h-16 w-16 md:h-20 md:w-20"
+                        : "h-12 w-12 md:h-16 md:w-16",
+                    ]}
                     style={`--coin-delay: -${(i * 0.31) % 3}s; --coin-bob-delay: -${(i * 0.47) % 4}s;`}
                   >
                     {/* Inner element — Mario coin: floats + flips around Y */}
@@ -56,6 +63,7 @@ const grouped = (Object.keys(skillCategoryLabels) as Skill["category"][]).map(
                         loading="lazy"
                         decoding="async"
                         class="tilt-coin block h-full w-full object-contain"
+                        style={s.iconScale ? `--icon-scale: ${s.iconScale};` : undefined}
                       />
                     </span>
                   </span>
@@ -146,8 +154,8 @@ const grouped = (Object.keys(skillCategoryLabels) as Skill["category"][]).map(
     will-change: transform, filter;
   }
   @keyframes coinSpin {
-    from { transform: rotateY(0deg); }
-    to   { transform: rotateY(360deg); }
+    from { transform: scale(var(--icon-scale, 1)) rotateY(0deg); }
+    to   { transform: scale(var(--icon-scale, 1)) rotateY(360deg); }
   }
   .tilt:hover .tilt-coin {
     filter:
