@@ -8,12 +8,51 @@ import { ClientRouter } from "astro:transitions";
 interface Props {
   title?: string;
   description?: string;
+  /** Path to a square or 1200x630 share image, served from /public. */
+  image?: string;
+  /**
+   * Override the page type for og:type. Default `website`; use `article`
+   * for any future blog posts so they get richer LinkedIn/X previews.
+   */
+  ogType?: "website" | "article" | "profile";
 }
 
 const {
   title = "Akishai — Software Engineer",
-  description = "Personal portfolio of Akishai — Software Engineering @ University of Waterloo. Builder, engineer, problem-solver.",
+  description = "Personal portfolio of Akishai Sabaratnasarma — Software Engineering @ University of Waterloo. Builder, engineer, problem-solver working at the intersection of ML, full-stack systems, and quantitative finance.",
+  image = "/img/me.jpg",
+  ogType = "website",
 } = Astro.props;
+
+// `Astro.site` comes from the `site` field in astro.config.mjs and is the
+// canonical absolute base URL. Build canonical + absolute share URLs from
+// it so previews on Twitter/LinkedIn/Slack actually load the image.
+const site = Astro.site ?? new URL("https://akishai.com");
+const canonicalURL = new URL(Astro.url.pathname, site).toString();
+const absoluteImage = new URL(image, site).toString();
+
+// Person schema — tells Google "this is a personal site about a real
+// person", powers the knowledge-panel-style result if you ever build
+// up enough authority signals.
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Akishai Sabaratnasarma",
+  alternateName: "Akishai",
+  url: site.toString(),
+  image: new URL("/img/me.jpg", site).toString(),
+  jobTitle: "Software Engineer",
+  description,
+  alumniOf: {
+    "@type": "CollegeOrUniversity",
+    name: "University of Waterloo",
+  },
+  sameAs: [
+    "https://github.com/Akishai18",
+    "https://www.linkedin.com/in/akishai",
+    "https://x.com/Akishai_S",
+  ],
+};
 ---
 
 <!doctype html>
@@ -24,12 +63,38 @@ const {
     <link rel="icon" type="image/png" href="/favicon-me.png" />
     <link rel="apple-touch-icon" href="/favicon-me.png" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="description" content={description} />
     <meta name="theme-color" content="#050608" />
+
+    {/* Primary SEO */}
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content="Akishai Sabaratnasarma" />
+    <meta name="keywords" content="Akishai, Akishai Sabaratnasarma, software engineer, University of Waterloo, machine learning, quantitative finance, full-stack, portfolio" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <link rel="canonical" href={canonicalURL} />
+
+    {/* Open Graph — share previews on LinkedIn, Slack, Discord, Facebook */}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="Akishai" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <title>{title}</title>
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={absoluteImage} />
+    <meta property="og:image:alt" content="Akishai Sabaratnasarma" />
+    <meta property="og:locale" content="en_US" />
+
+    {/* Twitter / X card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteImage} />
+    <meta name="twitter:creator" content="@Akishai_S" />
+    <meta name="twitter:site" content="@Akishai_S" />
+
+    {/* Structured data — Person schema, helps Google understand who the
+        site is about and connects social profiles together. */}
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(personSchema)} />
+
     <ClientRouter />
   </head>
   <body>

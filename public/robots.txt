@@ -1,0 +1,7 @@
+# Allow all crawlers across the whole site.
+User-agent: *
+Allow: /
+
+# Sitemap lives at /sitemap.xml — generated dynamically from
+# src/content/pages.ts so any new route gets indexed automatically.
+Sitemap: https://akishai.com/sitemap.xml
