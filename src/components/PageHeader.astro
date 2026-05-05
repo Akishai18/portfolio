@@ -1,5 +1,6 @@
 ---
 import { pagesById } from "../content/pages";
+import Planet from "./Planet.astro";
 
 interface Props {
   /** id from content/pages.ts */
@@ -23,21 +24,16 @@ if (!meta) throw new Error(`PageHeader: unknown pageId "${pageId}"`);
   </div>
 
   <div class="relative mx-auto flex max-w-6xl flex-col items-center px-6 text-center">
-    <!-- Mini planet -->
-    <span
-      class="relative mb-5 grid h-16 w-16 place-items-center rounded-full"
-      aria-hidden="true"
-      style={`view-transition-name: planet-${meta.id};`}
-    >
-      <span
-        class="absolute inset-0 rounded-full"
-        style={`background: radial-gradient(circle at 30% 30%, ${meta.accent}, ${meta.color} 60%, ${meta.color}aa 100%); box-shadow: 0 0 30px ${meta.color}80, inset -6px -6px 14px rgba(0,0,0,0.45);`}
-      ></span>
-      <span
-        class="absolute -inset-2 rounded-full border border-dashed opacity-40"
-        style={`border-color: ${meta.accent};`}
-      ></span>
-    </span>
+    <!-- Mini planet — surface treatment driven by meta.kind in content/pages.ts -->
+    <div class="mb-5">
+      <Planet
+        pageId={meta.id}
+        size={72}
+        active
+        orbitRing
+        viewTransitionName={`planet-${meta.id}`}
+      />
+    </div>
 
     <p
       class="font-mono text-[10px] uppercase tracking-[0.5em]"

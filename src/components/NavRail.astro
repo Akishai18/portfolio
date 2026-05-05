@@ -1,5 +1,6 @@
 ---
 import { pages } from "../content/pages";
+import Planet from "./Planet.astro";
 
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 
@@ -58,21 +59,24 @@ const isHome = path === "/";
                   active ? "is-active text-gold-200" : "text-silver-300/70 hover:text-silver-100",
                 ]}
               >
-                {/* Planet glyph — gains a faint orbit ring when active */}
+                {/* Planet glyph — surface treatment per kind, dashed orbit
+                    ring fades in when the page is active. */}
                 <span
                   class:list={[
-                    "rail-planet relative grid h-3.5 w-3.5 shrink-0 place-items-center",
+                    "rail-planet relative grid shrink-0 place-items-center",
                   ]}
                   style={`view-transition-name: rail-planet-${p.id};`}
                   aria-hidden="true"
                 >
+                  <Planet
+                    pageId={p.id}
+                    size={18}
+                    active={active}
+                    class="rail-planet-glyph"
+                  />
                   <span
-                    class="rail-planet-orb absolute inset-0 rounded-full"
-                    style={`background: radial-gradient(circle at 30% 30%, ${p.accent}, ${p.color} 70%); box-shadow: 0 0 ${active ? "10px" : "4px"} ${p.color}${active ? "cc" : "55"};`}
-                  ></span>
-                  <span
-                    class="rail-planet-ring absolute -inset-[3px] rounded-full"
-                    style={`border: 1px solid ${p.color}55;`}
+                    class="rail-planet-ring absolute -inset-[4px] rounded-full"
+                    style={`border: 1px dashed ${p.accent}80;`}
                   ></span>
                 </span>
 
@@ -211,10 +215,7 @@ const isHome = path === "/";
               active ? "bg-gold-500/15" : "hover:bg-silver-100/5",
             ]}
           >
-            <span
-              class="relative h-3 w-3 rounded-full"
-              style={`background: radial-gradient(circle at 30% 30%, ${p.accent}, ${p.color} 70%); box-shadow: 0 0 6px ${p.color}80;`}
-            />
+            <Planet pageId={p.id} size={14} active={active} />
           </a>
         );
       })
@@ -277,35 +278,45 @@ const isHome = path === "/";
     transform: translateX(0);
   }
 
-  /* Planet glyph ring — appears around active item like a selected orbit */
-  .rail-planet-orb {
-    transition: box-shadow 260ms ease, transform 260ms ease;
+  /* Planet glyph subtly grows on hover and a touch more when active.
+     Scaling the whole glyph (not just an orb) so the layered surface
+     and atmosphere scale together. */
+  :global(.rail-planet-glyph) {
+    transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
-  .rail-link:hover .rail-planet-orb {
+  .rail-link:hover :global(.rail-planet-glyph) {
     transform: scale(1.12);
   }
-  .rail-link.is-active .rail-planet-orb {
+  .rail-link.is-active :global(.rail-planet-glyph) {
     transform: scale(1.18);
   }
+
+  /* Selection orbit — dashed circle slowly rotating around the active item */
   .rail-planet-ring {
     opacity: 0;
-    transform: scale(0.7);
+    transform: scale(0.7) rotate(0deg);
     transition:
-      opacity 280ms ease,
-      transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+      opacity 320ms ease,
+      transform 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .rail-link.is-active .rail-planet-ring {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
+    animation: rail-orbit 16s linear infinite;
+  }
+  @keyframes rail-orbit {
+    from { transform: scale(1) rotate(0deg); }
+    to   { transform: scale(1) rotate(360deg); }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .rail-title,
     .rail-underline,
     .rail-chevron,
-    .rail-planet-orb,
+    :global(.rail-planet-glyph),
     .rail-planet-ring {
       transition: none;
+      animation: none;
     }
   }
 </style>

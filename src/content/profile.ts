@@ -5,7 +5,7 @@
 
 export const profile = {
   name: "Akishai",
-  fullName: "Akishai Suthakaran",
+  fullName: "Akishai Sabaratnasarma",
   role: "Software Engineer",
   school: "University of Waterloo",
   program: "B.Eng. Software Engineering",
@@ -13,6 +13,24 @@ export const profile = {
     "Engineer and builder on a mission to push the boundaries of what's possible through technology",
   shortBio:
     "I'm a Software Engineering student at the University of Waterloo with a passion for programming, engineering, and finance. I build things at the intersection of machine learning, full-stack systems, and quantitative finance.",
+  /**
+   * Two paragraphs shown in the home-page About section. Edit freely.
+   */
+  aboutParagraphs: [
+    "I'm a Software Engineering student at the University of Waterloo, dedicated to pushing the boundaries of what's possible through technology. I'm drawn to the overlap between engineering and finance which has led me to build at the intersection of machine learning, full-stack systems, and quantitative trading — and I'm currently exploring LLM as an integration into quant finance.",
+    "At my core, I'm a builder who loves to explore the world through tech and ship products that solve complex problems. Most recently I built SignalM a market regime detection and prediction platform using PCA, HMM, and ML models. In the future, I aspire to continuing to work at the intersection of trading and tech all the while disrupting the space by founding my own company ",
+  ],
+  /**
+   * "Right now" panel shown next to the home-page contact form.
+   * Edit these freely to keep the page feeling current.
+   */
+  now: [
+    { label: "Location", value: "Toronto, ON" },
+    { label: "Listening", value: "Daft Punk · Random Access Memories" },
+    { label: "Watching", value: "Game of Thrones" },
+    { label: "Building", value: "SignalM" },
+    { label: "Exploring", value: "Where LLMs add edge in trading" },
+  ],
   currentlyBuilding: [
     "A market-regime detection framework using unsupervised learning on volatility, correlation, and factor dynamics",
     "Nodaro — a student-led initiative providing mentorship and opportunities in hardware technology",

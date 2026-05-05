@@ -1,0 +1,551 @@
+---
+/**
+ * Planet glyph used in the nav rail and on every page header.
+ *
+ * Each page has a `kind` (gas-giant / ringed / rocky / terrestrial / metallic)
+ * which drives the surface treatment:
+ *
+ *   gas-giant   → warped horizontal bands + soft atmospheric rim
+ *   ringed      → gas-giant body + a tilted Saturn-style ring system
+ *                 (back half rendered behind the body, front half in front)
+ *   rocky       → desaturated body pock-marked with several crater radials
+ *   terrestrial → faint bands + a small ice cap and a single weather spot
+ *   metallic    → conic-gradient lustre sweep + sharp specular highlight
+ *
+ * Sizing is responsive to the `size` prop. Below ~24px we drop the surface
+ * detail (it just turns to mush) and only render the lit-hemisphere
+ * shading so the glyph still feels like a sphere, not a flat dot.
+ */
+import { pagesById } from "../content/pages";
+
+interface Props {
+  pageId: string;
+  /** Diameter of the planet body in pixels. */
+  size: number;
+  /**
+   * True when this is the focused/selected planet (rail active item or
+   * page header). Adds a faint halo + dashed orbit and brightens slightly.
+   */
+  active?: boolean;
+  /** Render the dashed orbit ring around the body. */
+  orbitRing?: boolean;
+  /** Optional className applied to the outermost wrapper. */
+  class?: string;
+  /** Optional view-transition-name to thread the planet across pages. */
+  viewTransitionName?: string;
+}
+
+const {
+  pageId,
+  size,
+  active = false,
+  orbitRing = false,
+  class: className = "",
+  viewTransitionName,
+} = Astro.props;
+
+const meta = pagesById[pageId];
+if (!meta) throw new Error(`Planet: unknown pageId "${pageId}"`);
+
+const { color, accent, kind } = meta;
+
+// Tiny glyphs (nav rail) can't show real surface detail. Render the
+// shaded sphere only and skip bands / craters / rings.
+const tiny = size <= 22;
+
+// Ringed planets need extra horizontal room for the ring overhang.
+// The ring is ~2.1× the body wide and tilted, so when projected its
+// bounding box reaches ~0.7× the body diameter above and below center.
+const ringHorizontalExtra = kind === "ringed" && !tiny ? size * 0.7 : 0;
+const ringVerticalExtra = kind === "ringed" && !tiny ? size * 0.5 : 0;
+
+const containerW = size + ringHorizontalExtra * 2;
+const containerH = size + ringVerticalExtra * 2;
+
+// Dashed orbit ring hugs the body, not the ring extents — otherwise
+// it looks bizarre wrapped around an ellipse.
+const orbitRingDiameter = size + 8;
+
+// ---- precomputed surface details, for kinds that need them ----------
+
+type Crater = { x: number; y: number; r: number; depth: number };
+type Spot = { x: number; y: number; rx: number; ry: number; intensity: number };
+
+// Deterministic crater pattern so the planet looks the same every load.
+const craters: Crater[] =
+  kind === "rocky"
+    ? [
+        { x: 28, y: 36, r: 0.12, depth: 0.55 },
+        { x: 62, y: 28, r: 0.09, depth: 0.45 },
+        { x: 48, y: 58, r: 0.16, depth: 0.6 },
+        { x: 72, y: 64, r: 0.1, depth: 0.5 },
+        { x: 22, y: 70, r: 0.07, depth: 0.4 },
+        { x: 80, y: 44, r: 0.06, depth: 0.35 },
+        { x: 40, y: 80, r: 0.08, depth: 0.45 },
+      ]
+    : [];
+
+// Single weather feature on terrestrials (educational planet).
+const terraSpots: Spot[] =
+  kind === "terrestrial"
+    ? [{ x: 64, y: 56, rx: 0.18, ry: 0.09, intensity: 0.55 }]
+    : [];
+
+// ---- ring path geometry (ringed kind only) ---------------------------
+// Ringed planet draws an SVG ring system in two halves so the body can
+// sit between them. Multiple concentric ringlets, plus a Cassini-style
+// dark division between bands.
+
+const ringTilt = -22; // degrees
+const ringRadii = !tiny && kind === "ringed"
+  ? [
+      { rxFactor: 1.18, opacity: 0.45, width: 0.04 }, // inner C-ring
+      { rxFactor: 1.32, opacity: 0.55, width: 0.05 }, // B-ring inner
+      { rxFactor: 1.5, opacity: 0.85, width: 0.1 },   // B-ring main
+      { rxFactor: 1.78, opacity: 0.4, width: 0.025 }, // Cassini gap edge
+      { rxFactor: 1.92, opacity: 0.7, width: 0.06 },  // A-ring
+      { rxFactor: 2.08, opacity: 0.5, width: 0.04 },  // A-ring outer
+    ]
+  : [];
+
+const ringFlat = 0.34; // ry / rx — flatter ellipse → more tilt
+const halfW = containerW / 2;
+const halfH = containerH / 2;
+const bodyR = size / 2;
+---
+
+<span
+  class:list={["planet", `planet--${kind}`, active && "is-active", className]}
+  style={`
+    --planet-color: ${color};
+    --planet-accent: ${accent};
+    --planet-size: ${size}px;
+    --container-w: ${containerW}px;
+    --container-h: ${containerH}px;
+    --ring-tilt: ${ringTilt}deg;
+    width: ${containerW}px;
+    height: ${containerH}px;
+    ${viewTransitionName ? `view-transition-name: ${viewTransitionName};` : ""}
+  `}
+  aria-hidden="true"
+>
+  {/* Saturn rings — back arcs, drawn behind the planet body */}
+  {kind === "ringed" && !tiny && (
+    <svg
+      class="planet-ring-svg"
+      viewBox={`${-halfW} ${-halfH} ${containerW} ${containerH}`}
+      width={containerW}
+      height={containerH}
+    >
+      <defs>
+        <linearGradient id={`ring-grad-${pageId}`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color={accent} stop-opacity="0.0" />
+          <stop offset="12%" stop-color={accent} stop-opacity="0.85" />
+          <stop offset="50%" stop-color="#fff4d6" stop-opacity="0.95" />
+          <stop offset="88%" stop-color={accent} stop-opacity="0.85" />
+          <stop offset="100%" stop-color={accent} stop-opacity="0.0" />
+        </linearGradient>
+      </defs>
+      <g transform={`rotate(${ringTilt})`}>
+        {ringRadii.map(({ rxFactor, opacity, width }) => {
+          const rx = bodyR * rxFactor;
+          const ry = rx * ringFlat;
+          // Back arc: from (-rx, 0) sweeping counter-clockwise to (rx, 0)
+          // (i.e. through the negative-y / "top" half in SVG space).
+          const d = `M ${-rx} 0 A ${rx} ${ry} 0 0 1 ${rx} 0`;
+          return (
+            <path
+              d={d}
+              fill="none"
+              stroke={`url(#ring-grad-${pageId})`}
+              stroke-width={bodyR * width * 2}
+              stroke-linecap="round"
+              opacity={opacity}
+            />
+          );
+        })}
+      </g>
+    </svg>
+  )}
+
+  {/* Body — layered radial/conic/repeating gradients per kind */}
+  <span
+    class="planet-body"
+    style={`
+      width: ${size}px;
+      height: ${size}px;
+      box-shadow:
+        0 0 ${active ? size * 0.45 : size * 0.18}px ${color}${active ? "aa" : "55"},
+        inset -${size * 0.18}px -${size * 0.18}px ${size * 0.32}px rgba(0, 0, 0, 0.55),
+        inset ${size * 0.06}px ${size * 0.06}px ${size * 0.18}px ${accent}30;
+    `}
+  >
+    {/* Base shading — lit hemisphere from upper-left */}
+    <span
+      class="planet-base"
+      style={`
+        background:
+          radial-gradient(
+            circle at 30% 28%,
+            ${accent} 0%,
+            ${color} 38%,
+            color-mix(in oklab, ${color} 55%, #050608) 76%,
+            #050608 100%
+          );
+      `}
+    ></span>
+
+    {/* Surface layers — only on bigger glyphs */}
+    {!tiny && kind === "gas-giant" && <span class="planet-bands"></span>}
+    {!tiny && kind === "gas-giant" && <span class="planet-spot planet-spot--storm"></span>}
+
+    {!tiny && kind === "ringed" && <span class="planet-bands planet-bands--soft"></span>}
+
+    {!tiny && kind === "rocky" && craters.map((c) => (
+      <span
+        class="planet-crater"
+        style={`
+          left: ${c.x}%;
+          top: ${c.y}%;
+          width: ${c.r * 100}%;
+          height: ${c.r * 100}%;
+          --crater-depth: ${c.depth};
+        `}
+      ></span>
+    ))}
+
+    {!tiny && kind === "terrestrial" && (
+      <>
+        <span class="planet-bands planet-bands--whisper"></span>
+        <span class="planet-icecap"></span>
+        {terraSpots.map((s) => (
+          <span
+            class="planet-spot planet-spot--weather"
+            style={`
+              left: ${s.x}%;
+              top: ${s.y}%;
+              width: ${s.rx * 100}%;
+              height: ${s.ry * 100}%;
+              opacity: ${s.intensity};
+            `}
+          ></span>
+        ))}
+      </>
+    )}
+
+    {!tiny && kind === "metallic" && (
+      <>
+        <span class="planet-lustre"></span>
+        <span class="planet-specular"></span>
+      </>
+    )}
+
+    {/* Atmospheric rim — fresnel-style outer brightening on lit edge */}
+    {!tiny && (
+      <span
+        class="planet-atmosphere"
+        style={`
+          background: radial-gradient(
+            circle at 32% 30%,
+            transparent 50%,
+            ${accent}28 72%,
+            transparent 92%
+          );
+        `}
+      ></span>
+    )}
+
+    {/* Limb darkening — mandatory, sells the sphere */}
+    <span class="planet-limb"></span>
+  </span>
+
+  {/* Saturn rings — front arcs, drawn over the planet body */}
+  {kind === "ringed" && !tiny && (
+    <svg
+      class="planet-ring-svg planet-ring-svg--front"
+      viewBox={`${-halfW} ${-halfH} ${containerW} ${containerH}`}
+      width={containerW}
+      height={containerH}
+    >
+      <g transform={`rotate(${ringTilt})`}>
+        {ringRadii.map(({ rxFactor, opacity, width }) => {
+          const rx = bodyR * rxFactor;
+          const ry = rx * ringFlat;
+          const d = `M ${-rx} 0 A ${rx} ${ry} 0 0 0 ${rx} 0`;
+          return (
+            <path
+              d={d}
+              fill="none"
+              stroke={`url(#ring-grad-${pageId})`}
+              stroke-width={bodyR * width * 2}
+              stroke-linecap="round"
+              opacity={opacity}
+            />
+          );
+        })}
+      </g>
+    </svg>
+  )}
+
+  {orbitRing && (
+    <span
+      class="planet-orbit-ring"
+      style={`
+        --orbit-color: ${accent};
+        width: ${orbitRingDiameter}px;
+        height: ${orbitRingDiameter}px;
+      `}
+    ></span>
+  )}
+</span>
+
+<style>
+  .planet {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .planet-body {
+    position: relative;
+    grid-area: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+    isolation: isolate;
+    z-index: 2;
+  }
+
+  .planet-base,
+  .planet-bands,
+  .planet-atmosphere,
+  .planet-limb,
+  .planet-lustre,
+  .planet-specular,
+  .planet-icecap {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* ── Bands (gas giant) ───────────────────────────────────────────── */
+  .planet-bands {
+    background:
+      repeating-linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.08) 6%,
+        transparent 12%,
+        rgba(0, 0, 0, 0.18) 18%,
+        transparent 24%,
+        rgba(255, 255, 255, 0.05) 32%,
+        transparent 40%,
+        rgba(0, 0, 0, 0.12) 48%,
+        transparent 56%,
+        rgba(255, 255, 255, 0.07) 66%,
+        transparent 74%,
+        rgba(0, 0, 0, 0.15) 82%,
+        transparent 92%
+      );
+    mix-blend-mode: overlay;
+    /* Bend the bands slightly with a horizontal radial mask so they
+       wrap around the sphere instead of looking flat. */
+    -webkit-mask-image: radial-gradient(ellipse 70% 100% at 50% 50%, #000 60%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 100% at 50% 50%, #000 60%, transparent 100%);
+    opacity: 0.85;
+  }
+  .planet-bands--soft {
+    opacity: 0.55;
+  }
+  .planet-bands--whisper {
+    opacity: 0.32;
+    background:
+      repeating-linear-gradient(
+        178deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.05) 14%,
+        transparent 26%,
+        rgba(0, 0, 0, 0.1) 40%,
+        transparent 56%,
+        rgba(255, 255, 255, 0.04) 68%,
+        transparent 82%
+      );
+  }
+
+  /* ── Storm spot (gas giant) ─────────────────────────────────────── */
+  .planet-spot {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+  .planet-spot--storm {
+    width: 22%;
+    height: 12%;
+    left: 64%;
+    top: 56%;
+    background:
+      radial-gradient(
+        ellipse 100% 100% at 40% 35%,
+        color-mix(in oklab, var(--planet-accent) 70%, #d05a18) 0%,
+        color-mix(in oklab, var(--planet-color) 70%, #6a1e02) 60%,
+        transparent 100%
+      );
+    mix-blend-mode: screen;
+    opacity: 0.7;
+    filter: blur(0.5px);
+  }
+  .planet-spot--weather {
+    background: radial-gradient(
+      ellipse 100% 100% at 50% 40%,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.18) 50%,
+      transparent 100%
+    );
+    mix-blend-mode: screen;
+    filter: blur(0.7px);
+  }
+
+  /* ── Craters (rocky) ─────────────────────────────────────────────── */
+  .planet-crater {
+    position: absolute;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background:
+      radial-gradient(
+        circle at 35% 30%,
+        rgba(255, 255, 255, 0.18) 0%,
+        rgba(255, 255, 255, 0.05) 18%,
+        rgba(0, 0, 0, calc(0.42 * var(--crater-depth, 0.5))) 38%,
+        rgba(0, 0, 0, calc(0.55 * var(--crater-depth, 0.5))) 60%,
+        rgba(255, 255, 255, 0.12) 86%,
+        transparent 100%
+      );
+    mix-blend-mode: multiply;
+    opacity: 0.95;
+  }
+
+  /* ── Ice cap (terrestrial) ──────────────────────────────────────── */
+  .planet-icecap {
+    background: radial-gradient(
+      ellipse 60% 22% at 50% 8%,
+      rgba(245, 248, 255, 0.85) 0%,
+      rgba(220, 232, 255, 0.5) 40%,
+      transparent 80%
+    );
+    mix-blend-mode: screen;
+  }
+
+  /* ── Metallic finish ────────────────────────────────────────────── */
+  .planet-lustre {
+    background: conic-gradient(
+      from 210deg at 50% 50%,
+      rgba(255, 255, 255, 0) 0deg,
+      rgba(255, 245, 220, 0.18) 60deg,
+      rgba(255, 255, 255, 0.42) 110deg,
+      rgba(255, 245, 220, 0.18) 160deg,
+      rgba(255, 255, 255, 0) 220deg,
+      rgba(0, 0, 0, 0.18) 290deg,
+      rgba(255, 255, 255, 0) 360deg
+    );
+    mix-blend-mode: overlay;
+    opacity: 0.9;
+  }
+  .planet-specular {
+    position: absolute;
+    width: 22%;
+    height: 22%;
+    left: 28%;
+    top: 22%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 35% 35%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 248, 220, 0.45) 30%,
+      transparent 70%
+    );
+    filter: blur(1.5px);
+    mix-blend-mode: screen;
+    transform: translate(-15%, -15%);
+  }
+
+  /* ── Atmosphere + limb (always on) ──────────────────────────────── */
+  .planet-atmosphere {
+    pointer-events: none;
+  }
+  .planet-limb {
+    background:
+      radial-gradient(
+        circle at 50% 50%,
+        transparent 64%,
+        rgba(0, 0, 0, 0.22) 84%,
+        rgba(0, 0, 0, 0.55) 100%
+      );
+    pointer-events: none;
+  }
+
+  /* ── Saturn rings ────────────────────────────────────────────────── */
+  .planet-ring-svg {
+    position: absolute;
+    grid-area: 1 / 1;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .planet-ring-svg--front {
+    z-index: 3;
+  }
+
+  /* ── Outer dashed orbit (optional) ──────────────────────────────── */
+  .planet-orbit-ring {
+    position: absolute;
+    grid-area: 1 / 1;
+    border: 1px dashed var(--orbit-color);
+    border-radius: 50%;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 4;
+    animation: planet-orbit-spin 28s linear infinite;
+  }
+  .planet.is-active .planet-orbit-ring {
+    opacity: 0.6;
+  }
+
+  @keyframes planet-orbit-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  /* Slow axial-rotation feel: drift the bands slowly across.
+     Pure cosmetic; only on bands so it feels like atmospheric flow,
+     not a spinning sphere (which would betray the 2D rendering). */
+  .planet:not(.is-active) .planet-bands {
+    animation: planet-band-drift 38s linear infinite;
+  }
+  .planet.is-active .planet-bands {
+    animation: planet-band-drift 22s linear infinite;
+  }
+  @keyframes planet-band-drift {
+    from { background-position: 0 0; }
+    to   { background-position: 0 -100%; }
+  }
+
+  /* The metallic lustre slowly sweeps too, like reflected starlight. */
+  .planet--metallic .planet-lustre {
+    animation: planet-lustre-spin 24s linear infinite;
+  }
+  @keyframes planet-lustre-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .planet-orbit-ring,
+    .planet-bands,
+    .planet--metallic .planet-lustre {
+      animation: none;
+    }
+  }
+</style>

@@ -2,25 +2,28 @@
 import Layout from "../layouts/Layout.astro";
 import SocialLinks from "../components/SocialLinks.astro";
 import { profile } from "../content/profile";
+import { projects } from "../content/portfolio";
 
-const aboutCards = [
-  {
-    label: "Mission",
-    body: "I'm a developer determined to push the boundaries of what's possible through technology. I believe many of the problems our world faces can be addressed with code — and I'm driven to build solutions that solve hard problems and make a difference.",
-  },
-  {
-    label: "Focus",
-    body: "Studying Software Engineering at the University of Waterloo. Alongside the technical work, I'm expanding into business and finance — and currently exploring machine learning and AI as a path into Quantitative Finance.",
-  },
-  {
-    label: "How I work",
-    body: "I love collaborative environments where I can use creativity to innovate and ship things that matter. I gravitate toward shared ownership, fast iteration, and ideas that make sense before they make money.",
-  },
-  {
-    label: "Outside the code",
-    body: "I lead student initiatives, run a tutoring business, and chase competitions across DECA, hackathons, and case comps. I'd rather be in the arena than at the sidelines.",
-  },
-];
+// Featured project shown on the home page
+const signalm = projects.find((p) => p.name === "SignalM") ?? projects[0];
+
+// Pull the first ~4 words of the opening About paragraph so we can
+// render them as a gold italic lead-in. The drop cap's ::first-letter
+// rule still wins on the very first character, so the visual flow is:
+//   [3.6em gold I] [1.08em gold italic 'm a Software Engineering]
+//   [silver sans body for the rest of the paragraph].
+// The split is whitespace-based; if the paragraph happens to be shorter
+// than the requested word count, we just lead the whole sentence.
+const aboutLeadWordCount = 4;
+const aboutFirstPara = profile.aboutParagraphs[0] ?? "";
+const aboutRestParas = profile.aboutParagraphs.slice(1);
+const aboutLeadRegex = new RegExp(
+  `^((?:\\S+\\s+){${aboutLeadWordCount - 1}}\\S+)(\\s+)?([\\s\\S]*)$`,
+);
+const aboutLeadMatch = aboutFirstPara.match(aboutLeadRegex);
+const aboutLeadWord = aboutLeadMatch?.[1] ?? aboutFirstPara;
+const aboutLeadGap = aboutLeadMatch?.[2] ?? "";
+const aboutLeadRest = aboutLeadMatch?.[3] ?? "";
 
 // Split a fact body into plain + highlighted ({{ ... }}) segments
 function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
@@ -39,7 +42,7 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
 ---
 
 <Layout>
-  <section class="relative mx-auto min-h-screen max-w-6xl px-6 pt-16 pb-24 md:pt-24">
+  <section class="relative mx-auto max-w-6xl px-6 pt-16 pb-10 md:pt-24 md:pb-12">
     <!-- Eyebrow -->
     <p
       class="font-mono text-[10px] uppercase tracking-[0.5em] text-gold-400"
@@ -110,11 +113,15 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
             class="pointer-events-none absolute -inset-6 rounded-full bg-gold-500/20 blur-3xl"
             aria-hidden="true"
           ></div>
-          <!-- Rotating dashed ring -->
+          <!-- Rotating dashed ring with a single orbiting marker dot.
+               The marker shares the ring's rotation animation, so it
+               travels around the portrait like a satellite. -->
           <div
-            class="pointer-events-none absolute -inset-3 rounded-full border border-dashed border-gold-500/40 animate-orbit"
+            class="portrait-orbit pointer-events-none absolute -inset-3 rounded-full border border-dashed border-gold-500/40 animate-orbit"
             aria-hidden="true"
-          ></div>
+          >
+            <span class="portrait-orbit-marker" aria-hidden="true"></span>
+          </div>
           <!-- Inner gold-tinted ring -->
           <div
             class="relative h-80 w-80 overflow-hidden rounded-full border border-gold-500/60 shadow-[0_0_40px_rgba(184,134,11,0.35),inset_0_0_30px_rgba(212,168,90,0.15)] md:h-96 md:w-96"
@@ -143,82 +150,314 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
     </div>
   </section>
 
-  <!-- About: intro + bio -->
-  <section class="mx-auto max-w-3xl px-6 pt-12 pb-16 md:pt-20">
+  <!-- About — magazine-style: eyebrow + display heading + two paragraphs.
+       Two paragraphs live in profile.ts → profile.aboutParagraphs so the
+       copy is editable in one place. -->
+  <section class="mx-auto max-w-3xl px-6 pt-2 pb-12 md:pt-4 md:pb-16">
     <p
       class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400"
       data-fade-in
     >
       ◦ About
     </p>
-    <p
-      class="mt-6 text-balance text-2xl leading-relaxed text-silver-200 md:text-3xl"
-      data-fade-in
-    >
-      Hey, I'm <span class="text-gradient-gold italic">Akishai</span> — an
-      ambitious Software Engineering student with a strong proclivity toward
-      <span class="text-gold-300">programming</span>,
-      <span class="text-gold-300">engineering</span>, and
-      <span class="text-gold-300">finance</span>.
-    </p>
-    <p
-      class="mt-6 text-pretty text-base leading-relaxed text-silver-300/85 md:text-lg"
-      data-fade-in
-    >
-      {profile.shortBio}
-    </p>
-  </section>
 
-  <!-- About cards -->
-  <section class="mx-auto max-w-5xl px-6 pb-20">
-    <ul class="grid gap-5 md:grid-cols-2" role="list">
-      {
-        aboutCards.map((c, i) => (
-          <li
-            class="about-card group relative overflow-hidden rounded-2xl border border-silver-600/20 bg-void-900/40 p-6 backdrop-blur-sm transition-all duration-300 hover:border-gold-500/40 hover:bg-void-900/60 md:p-8"
-            style={`animation-delay: ${i * 80}ms`}
-          >
-            <div
-              class="pointer-events-none absolute -top-16 -right-16 h-44 w-44 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-50"
-              style="background: radial-gradient(circle, rgba(184,134,11,0.5), transparent 70%);"
-              aria-hidden="true"
-            />
-            <p class="relative font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400">
-              ◦ {c.label}
-            </p>
-            <p class="relative mt-4 text-base leading-relaxed text-silver-200/95 md:text-lg">
-              {c.body}
-            </p>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
+    <h2
+      class="mt-5 text-balance text-4xl leading-[1.05] md:text-5xl"
+      data-fade-in
+      data-fade-in-delay="60"
+    >
+      <span class="text-gradient-silver">A little </span>
+      <span class="text-gradient-gold italic">about me.</span>
+    </h2>
 
-  <!-- Currently building -->
-  <section class="mx-auto max-w-3xl px-6 pb-32">
-    <header class="mb-6">
-      <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400">
-        ◦ Currently building
+    {/* Subtle gold rule between heading and prose for editorial feel */}
+    <div
+      class="mt-8 h-px w-16 bg-gradient-to-r from-gold-400/70 to-transparent"
+      data-fade-in
+      data-fade-in-delay="120"
+      aria-hidden="true"
+    ></div>
+
+    <div
+      class="about-prose mt-8 space-y-6 text-pretty text-[17px] leading-[1.8] text-silver-200/90 md:text-lg"
+      data-fade-in
+      data-fade-in-delay="180"
+    >
+      <p>
+        <span class="about-lead">{aboutLeadWord}</span>{aboutLeadGap}{aboutLeadRest}
       </p>
-      <h2 class="mt-2 text-3xl md:text-4xl">
-        <span class="text-gradient-silver">In flight</span>
-        <span class="text-gradient-gold italic">.</span>
+      {aboutRestParas.map((p) => <p>{p}</p>)}
+    </div>
+
+  </section>
+
+  {/* Features — single featured project (SignalM), reusing the projects-page card. */}
+  <section class="mx-auto max-w-7xl px-6 pt-2 pb-12 md:pt-4 md:pb-16">
+    <header class="mb-6">
+      <p
+        class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400"
+        data-fade-in
+      >
+        ◦ Featured
+      </p>
+      <h2
+        class="mt-3 text-balance text-4xl leading-[1.05] md:text-5xl"
+        data-fade-in
+        data-fade-in-delay="60"
+      >
+        <span class="text-gradient-silver">In </span>
+        <span class="text-gradient-gold italic">flight.</span>
       </h2>
     </header>
-    <ul class="space-y-4" role="list">
-      {
-        profile.currentlyBuilding.map((item, i) => (
-          <li class="flex gap-4 rounded-xl border border-silver-600/20 bg-void-900/30 p-5">
-            <span class="font-mono text-xs text-gold-400 tabular-nums">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <p class="leading-relaxed text-silver-300/90">{item}</p>
-          </li>
-        ))
-      }
-    </ul>
+
+    <article
+      class="feature-card group relative flex flex-col overflow-hidden rounded-2xl border border-silver-600/20 bg-void-900/40 backdrop-blur-sm transition-all duration-500 hover:border-gold-500/50 hover:shadow-[0_0_50px_rgba(184,134,11,0.18)] md:flex-row md:min-h-[380px]"
+      data-fade-in
+      data-fade-in-delay="180"
+    >
+      {/* Info column — left on desktop, top on mobile */}
+      <div
+        class="flex flex-col justify-between gap-6 p-7 md:w-2/5 md:shrink-0 md:p-10"
+      >
+        <div class="space-y-4">
+          <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400/80">
+            <span class="text-gold-300">01</span>
+            <span class="mx-2 text-silver-500">/</span>
+            Featured Build
+          </p>
+
+          <h3 class="text-3xl leading-[1.05] text-silver-100 md:text-4xl">
+            <a
+              href={signalm.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="transition-colors hover:text-gold-200"
+            >
+              {signalm.name}
+            </a>
+          </h3>
+
+          <p class="text-sm leading-relaxed text-silver-300/85 md:text-[15px]">
+            {signalm.description}
+          </p>
+        </div>
+
+        <div class="space-y-5">
+          <ul class="flex flex-wrap gap-2" role="list">
+            {
+              signalm.tags.map((t) => (
+                <li class="rounded-full border border-gold-500/30 bg-gold-500/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest text-gold-300">
+                  {t}
+                </li>
+              ))
+            }
+          </ul>
+
+          <a
+            href={signalm.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-magnetic
+            class="group/btn inline-flex items-center gap-2.5 rounded-full border border-gold-500/40 bg-gradient-to-b from-gold-500/10 to-transparent px-4 py-2 font-mono text-[10px] uppercase tracking-[0.3em] text-gold-200 transition hover:border-gold-400 hover:bg-gold-500/15 hover:shadow-[0_0_24px_rgba(184,134,11,0.25)]"
+          >
+            <span>Open project</span>
+            <svg
+              viewBox="0 0 16 16"
+              class="h-3 w-3 fill-none stroke-current transition-transform group-hover/btn:translate-x-0.5"
+              stroke-width="1.6"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 8 H13 M9 4 L13 8 L9 12"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      {/* Preview column — stretches to match info column height on desktop */}
+      <a
+        href={signalm.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open ${signalm.name}`}
+        data-magnetic
+        class="relative block aspect-[16/10] overflow-hidden bg-void-800 md:aspect-auto md:flex-1 md:border-l md:border-silver-600/15"
+      >
+        <img
+          src={signalm.image}
+          alt={signalm.name}
+          loading="lazy"
+          decoding="async"
+          class="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
+        />
+        <div
+          class="pointer-events-none absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-void-950/85 via-void-950/35 to-transparent"
+          aria-hidden="true"
+        ></div>
+        <div
+          class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-void-950/80 to-transparent"
+          aria-hidden="true"
+        ></div>
+        <div
+          class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          style="background: radial-gradient(circle at 60% 35%, rgba(184,134,11,0.20), transparent 60%);"
+          aria-hidden="true"
+        ></div>
+      </a>
+    </article>
+
+    <div class="mt-6 text-center" data-fade-in data-fade-in-delay="260">
+      <a
+        href="/projects"
+        data-magnetic
+        class="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.4em] text-silver-400 transition-colors hover:text-gold-300"
+      >
+        <span>See all projects</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
   </section>
+
+  {/* Contact — EmailJS-powered form. Public key + IDs are intentionally
+       client-side; EmailJS scopes them to the configured allowed origins. */}
+  <section class="mx-auto max-w-6xl px-6 pt-2 pb-24 md:pt-4">
+    <div class="grid gap-12 md:grid-cols-[5fr_7fr] md:gap-16">
+      {/* Left — "Right now" panel: small live snapshot of where I'm at */}
+      <aside
+        class="now-panel relative flex flex-col"
+        data-fade-in
+      >
+        <div class="now-header flex items-center gap-3">
+          <span class="now-dot" aria-hidden="true"></span>
+          <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-300">
+            Right now
+          </p>
+        </div>
+
+        <h3
+          class="mt-3 text-balance text-3xl leading-[1.05] md:text-4xl"
+          data-fade-in
+          data-fade-in-delay="60"
+        >
+          <span class="text-gradient-silver">Where </span>
+          <span class="text-gradient-gold italic">I'm at.</span>
+        </h3>
+
+        <p class="mt-4 max-w-[32ch] text-sm leading-relaxed text-silver-400/85">
+          A small snapshot of life this week — refreshed every so often.
+        </p>
+
+        <dl class="now-list mt-7" role="list">
+          {
+            profile.now.map((row) => (
+              <div class="now-row">
+                <dt>{row.label}</dt>
+                <dd>{row.value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </aside>
+
+      {/* Right — heading + form, sitting together so the title clearly
+           belongs to the form below it. */}
+      <div class="contact-col flex flex-col" data-fade-in data-fade-in-delay="120">
+        <header>
+          <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-400">
+            ◦ Contact
+          </p>
+          <h2 class="mt-3 text-balance text-4xl leading-[1.05] md:text-5xl">
+            <span class="text-gradient-silver">Let's </span>
+            <span class="text-gradient-gold italic">connect.</span>
+          </h2>
+          <p
+            class="mt-4 text-pretty text-base leading-relaxed text-silver-300/80 md:text-[17px]"
+          >
+            Got an idea, opportunity, or just want to say hi? Drop a message —
+            or email
+            <a
+              href={`mailto:${profile.email}`}
+              class="text-gold-300 underline decoration-gold-500/40 underline-offset-4 transition-colors hover:text-gold-200 hover:decoration-gold-300"
+            >
+              {profile.email}
+            </a>
+            .
+          </p>
+        </header>
+
+        <form
+          id="contact-form"
+          class="contact-form mt-7 rounded-2xl border border-silver-600/20 bg-void-900/40 p-7 backdrop-blur-sm md:p-8"
+          novalidate
+        >
+        <div class="grid gap-5 sm:grid-cols-2">
+          <label class="contact-field">
+            <span>Name</span>
+            <input
+              type="text"
+              name="name"
+              autocomplete="name"
+              required
+              placeholder="Your name"
+            />
+          </label>
+          <label class="contact-field">
+            <span>Email</span>
+            <input
+              type="email"
+              name="email"
+              autocomplete="email"
+              required
+              placeholder="you@example.com"
+            />
+          </label>
+        </div>
+
+        <label class="contact-field mt-5 block">
+          <span>Message</span>
+          <textarea
+            name="message"
+            rows="6"
+            required
+            placeholder="What's on your mind?"></textarea>
+        </label>
+
+        <div class="mt-7 flex flex-col-reverse items-start justify-between gap-4 md:flex-row md:items-center">
+          <p
+            id="contact-status"
+            class="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-500"
+            aria-live="polite"
+          >
+          </p>
+          <button type="submit" class="contact-submit">
+            <span class="contact-submit-label">Send message</span>
+            <svg
+              viewBox="0 0 16 16"
+              class="h-3 w-3 fill-none stroke-current transition-transform"
+              stroke-width="1.6"
+              aria-hidden="true"
+            >
+              <path
+                d="M3 8 H13 M9 4 L13 8 L9 12"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  {/* EmailJS browser SDK — loaded once, used by the contact-form script below. */}
+  <script
+    is:inline
+    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"
+  ></script>
 </Layout>
 
 <style>
@@ -244,11 +483,92 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
     animation: orbit 24s linear infinite;
   }
 
-  /* About card entrance — fades in via animation-delay (set inline per card) */
-  .about-card {
-    opacity: 0;
-    transform: translateY(14px);
-    animation: fadeInUp 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  /* Orbiting marker dot on the hero portrait — sits at top center of the
+     rotating ring, so the parent's spin carries it around the portrait. */
+  .portrait-orbit {
+    /* Re-establish a positioning context for the marker pseudo-element. */
+    position: absolute;
+  }
+  .portrait-orbit-marker {
+    position: absolute;
+    left: 50%;
+    top: -5px;
+    width: 9px;
+    height: 9px;
+    transform: translateX(-50%);
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle at 32% 32%,
+      #fff4d6 0%,
+      #e6c275 50%,
+      #b8860b 100%
+    );
+    box-shadow:
+      0 0 12px rgba(232, 194, 117, 0.85),
+      0 0 4px rgba(255, 230, 170, 0.6);
+  }
+  .portrait-orbit-marker::after {
+    /* Faint companion trail */
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(232, 194, 117, 0.35);
+    box-shadow: 0 0 6px rgba(232, 194, 117, 0.45);
+    transform: translate(-260%, -50%);
+    filter: blur(0.6px);
+  }
+
+  /* About prose — magazine-style with a real 3-line drop cap on the
+     opening letter. Float-left so the rest of the paragraph wraps
+     naturally around it. */
+  .about-prose > p:first-child::first-letter {
+    float: left;
+    font-family: var(--font-display, "Cormorant Garamond", Georgia, serif);
+    font-style: italic;
+    font-weight: 500;
+    /* Approx 3 lines tall at body line-height 1.8 → ~3.4em */
+    font-size: 3.6em;
+    line-height: 0.88;
+    margin: 0.06em 0.14em -0.05em 0;
+    padding-right: 0.04em;
+    color: rgba(232, 194, 117, 0.95);
+    background: linear-gradient(
+      135deg,
+      #fbe4af 0%,
+      #f4d896 28%,
+      #e6c275 58%,
+      #b8860b 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: 0 0 14px rgba(212, 168, 90, 0.22);
+  }
+
+  /* Magazine lead-in — first word picked up in italic gold display so
+     the drop cap's gold treatment carries gracefully into the body's
+     opening line. From the second word on, type returns to silver sans. */
+  .about-lead {
+    font-family: var(--font-display, "Cormorant Garamond", Georgia, serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1.08em;
+    letter-spacing: -0.005em;
+    background: linear-gradient(
+      135deg,
+      #f4d896 0%,
+      #e6c275 50%,
+      #b8860b 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   /* --- Quick facts (jot notes) ---
@@ -339,14 +659,226 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
     border-color: rgba(212, 168, 90, 0.55);
   }
 
+  /* --- "Right now" panel ----------------------------------------------
+     Editorial label/value list that lives left of the contact form.
+     Each row is a definition pair separated by a hairline gold rule, with
+     the label in gold mono and the value in silver body text. */
+  .now-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: #22c55e;
+    box-shadow:
+      0 0 8px rgba(34, 197, 94, 0.7),
+      0 0 14px rgba(34, 197, 94, 0.35);
+    animation: nowPulse 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes nowPulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(0.85);
+    }
+  }
+
+  .now-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid rgba(212, 168, 90, 0.12);
+  }
+  .now-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 1.05rem 0 1.05rem 0.85rem;
+    border-bottom: 1px solid rgba(212, 168, 90, 0.12);
+    transition: background 240ms ease;
+  }
+  /* Hairline gold accent rule on the left edge — grows from the center
+     on hover to telegraph "this row is the focus right now". */
+  .now-row::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 2px;
+    height: 0;
+    border-radius: 1px;
+    background: linear-gradient(
+      to bottom,
+      rgba(232, 194, 117, 0.85) 0%,
+      rgba(212, 168, 90, 0.4) 60%,
+      rgba(212, 168, 90, 0) 100%
+    );
+    transform: translateY(-50%);
+    transition: height 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    pointer-events: none;
+  }
+  .now-row:hover {
+    background: linear-gradient(
+      90deg,
+      rgba(212, 168, 90, 0.06),
+      transparent 60%
+    );
+  }
+  .now-row:hover::before {
+    height: 70%;
+  }
+  .now-row dt {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: rgba(212, 168, 90, 0.7);
+    margin: 0;
+    transition: color 240ms ease;
+  }
+  .now-row dd {
+    font-size: 15px;
+    line-height: 1.5;
+    color: rgba(216, 219, 226, 0.92);
+    margin: 0;
+    transition:
+      color 240ms ease,
+      transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .now-row:hover dt {
+    color: rgba(232, 194, 117, 0.95);
+  }
+  .now-row:hover dd {
+    color: rgba(244, 245, 247, 1);
+    transform: translateX(2px);
+  }
+  @media (min-width: 768px) {
+    .now-row {
+      grid-template-columns: 110px 1fr;
+    }
+  }
+
+  /* --- Contact form ---------------------------------------------------
+     Editorial dark form with gold-accent focus states. Inputs use a
+     subtle inset background so they read as "engraved" against the card. */
+  .contact-field span {
+    display: block;
+    margin-bottom: 0.55rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    color: rgba(212, 168, 90, 0.75);
+  }
+  .contact-field input,
+  .contact-field textarea {
+    width: 100%;
+    background: rgba(8, 9, 13, 0.55);
+    border: 1px solid rgba(212, 168, 90, 0.18);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    color: rgba(232, 235, 240, 0.95);
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    transition:
+      border-color 220ms ease,
+      background 220ms ease,
+      box-shadow 220ms ease;
+  }
+  .contact-field input::placeholder,
+  .contact-field textarea::placeholder {
+    color: rgba(138, 143, 152, 0.6);
+  }
+  .contact-field input:hover,
+  .contact-field textarea:hover {
+    border-color: rgba(212, 168, 90, 0.32);
+  }
+  .contact-field input:focus,
+  .contact-field textarea:focus {
+    outline: none;
+    border-color: rgba(212, 168, 90, 0.6);
+    background: rgba(8, 9, 13, 0.85);
+    box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
+  }
+  .contact-field textarea {
+    resize: vertical;
+    min-height: 140px;
+  }
+
+  .contact-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.75rem 1.4rem;
+    border: 1px solid rgba(212, 168, 90, 0.5);
+    border-radius: 9999px;
+    background: linear-gradient(
+      180deg,
+      rgba(184, 134, 11, 0.14),
+      rgba(184, 134, 11, 0.04)
+    );
+    color: #e6c275;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    cursor: pointer;
+    transition:
+      border-color 280ms ease,
+      background 280ms ease,
+      box-shadow 280ms ease,
+      color 280ms ease,
+      transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .contact-submit:hover:not(:disabled) {
+    border-color: rgba(232, 194, 117, 1);
+    background: linear-gradient(
+      180deg,
+      rgba(184, 134, 11, 0.24),
+      rgba(184, 134, 11, 0.08)
+    );
+    box-shadow: 0 0 28px rgba(184, 134, 11, 0.25);
+    color: #f4d896;
+  }
+  .contact-submit:hover:not(:disabled) svg {
+    transform: translateX(2px);
+  }
+  .contact-submit:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  /* Status message colors flipped via inline style from the script */
+  #contact-status[data-state="ok"] {
+    color: rgba(110, 220, 140, 0.95);
+  }
+  #contact-status[data-state="error"] {
+    color: rgba(240, 130, 130, 0.95);
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    [data-fade-in],
-    .about-card {
+    [data-fade-in] {
       opacity: 1;
       transform: none;
       animation: none;
     }
     .animate-orbit {
+      animation: none;
+    }
+    .contact-submit,
+    .contact-field input,
+    .contact-field textarea,
+    .now-row {
+      transition: none;
+    }
+    .now-dot {
       animation: none;
     }
   }
@@ -358,4 +890,99 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
     const d = el.getAttribute("data-fade-in-delay");
     if (d) el.style.setProperty("--fade-delay", `${d}ms`);
   });
+
+  /* ------------------------------------------------------------------ */
+  /* Contact form — sends via EmailJS (same service as the old site).   */
+  /* ------------------------------------------------------------------ */
+
+  type EmailJSWindow = Window & {
+    emailjs?: {
+      send: (
+        serviceId: string,
+        templateId: string,
+        params: Record<string, string>,
+        options: { publicKey: string },
+      ) => Promise<unknown>;
+    };
+  };
+
+  const EMAILJS_SERVICE = "service_2rkckfr";
+  const EMAILJS_TEMPLATE = "template_zozm47l";
+  const EMAILJS_PUBLIC_KEY = "xN9vAPBaFqMNX-PtK";
+  const TO_EMAIL = "akishais18@gmail.com";
+
+  function initContactForm() {
+    const form = document.getElementById(
+      "contact-form",
+    ) as HTMLFormElement | null;
+    if (!form || form.dataset.bound === "1") return;
+    form.dataset.bound = "1";
+
+    const status = document.getElementById(
+      "contact-status",
+    ) as HTMLParagraphElement | null;
+    const button = form.querySelector<HTMLButtonElement>(
+      'button[type="submit"]',
+    );
+    const buttonLabel = button?.querySelector<HTMLSpanElement>(
+      ".contact-submit-label",
+    );
+
+    function setStatus(msg: string, state: "ok" | "error" | "" = "") {
+      if (!status) return;
+      status.textContent = msg;
+      if (state) status.dataset.state = state;
+      else delete status.dataset.state;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = new FormData(form);
+      const name = String(data.get("name") || "").trim();
+      const email = String(data.get("email") || "").trim();
+      const message = String(data.get("message") || "").trim();
+
+      if (!name || !email || !message) {
+        setStatus("◦ Fill every field, then send", "error");
+        return;
+      }
+
+      const w = window as EmailJSWindow;
+      if (!w.emailjs) {
+        setStatus("◦ Mail service still loading — try again", "error");
+        return;
+      }
+
+      if (button) button.disabled = true;
+      if (buttonLabel) buttonLabel.textContent = "Sending…";
+      setStatus("◦ Sending…");
+
+      try {
+        await w.emailjs.send(
+          EMAILJS_SERVICE,
+          EMAILJS_TEMPLATE,
+          {
+            from_name: name,
+            to_name: "Akishai",
+            from_email: email,
+            to_email: TO_EMAIL,
+            message,
+          },
+          { publicKey: EMAILJS_PUBLIC_KEY },
+        );
+        setStatus("◦ Message sent — talk soon", "ok");
+        form.reset();
+      } catch (err) {
+        console.error("EmailJS send failed", err);
+        setStatus("◦ Something went wrong — try again", "error");
+      } finally {
+        if (button) button.disabled = false;
+        if (buttonLabel) buttonLabel.textContent = "Send message";
+      }
+    });
+  }
+
+  initContactForm();
+  document.addEventListener("astro:page-load", initContactForm);
 </script>
