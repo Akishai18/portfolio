@@ -15,36 +15,38 @@ const grouped = (Object.keys(awardCategoryLabels) as Award["category"][]).map(
   })
 );
 
-const totalCount = awards.length;
+/**
+ * Split a year string into 4-digit lines for the medallion.
+ *   "2025"          → ["2025"]
+ *   "2024 · 2025"   → ["2024", "2025"]
+ *   "2021–2025"     → ["2021", "2025"]
+ *   "Jul 2026"      → ["2026"]
+ * The medallion stacks the lines so multi-year ranges sit cleanly on
+ * separate lines instead of wrapping mid-string.
+ */
+function medalYearLines(raw: string): string[] {
+  const matches = raw.match(/\d{4}/g);
+  if (!matches || matches.length === 0) return [raw];
+  if (matches.length === 1) return [matches[0]];
+  // Keep first + last only (handles "21·22·23" → "21" / "23")
+  return [matches[0], matches[matches.length - 1]];
+}
 ---
 
 <Layout title="Awards — Akishai" description={meta.blurb}>
   <PageHeader pageId="awards" />
 
   <section class="mx-auto max-w-5xl px-6 pb-32">
-    {/* Top stats strip — total count + small flourish */}
-    <div class="mb-14 flex items-center gap-4">
-      <span
-        class="h-px flex-1 bg-gradient-to-r from-transparent to-gold-500/40"
-      ></span>
-      <span class="font-mono text-[10px] uppercase tracking-[0.45em] text-gold-300/85">
-        {String(totalCount).padStart(2, "0")} · accolades
-      </span>
-      <span
-        class="h-px flex-1 bg-gradient-to-l from-transparent to-gold-500/40"
-      ></span>
-    </div>
-
     <div class="space-y-16">
       {
         grouped.map((group, gi) => (
           <div data-fade-in style={`animation-delay: ${gi * 100}ms`}>
             {/* Category header */}
             <header class="mb-7 flex items-baseline gap-4">
-              <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-300/90">
+              <p class="font-mono text-[10px] uppercase tracking-[0.4em] text-gold-300/85">
                 ◦ {group.label}
               </p>
-              <span class="h-px flex-1 bg-gradient-to-r from-gold-500/35 via-gold-500/12 to-transparent" />
+              <span class="h-px flex-1 bg-gradient-to-r from-gold-500/25 via-gold-500/8 to-transparent" />
               <span class="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-500">
                 {String(group.items.length).padStart(2, "0")}
               </span>
@@ -53,11 +55,11 @@ const totalCount = awards.length;
             <ul class="grid gap-4 md:grid-cols-2" role="list">
               {group.items.map((award, i) => (
                 <li
-                  class="award-card group relative flex gap-5 overflow-hidden rounded-xl border border-gold-500/15 bg-void-900/40 p-5 backdrop-blur-sm transition-all duration-500 hover:border-gold-400/55 hover:shadow-[0_0_36px_rgba(232,169,96,0.14)] md:p-6"
+                  class="award-card group relative flex gap-5 overflow-hidden rounded-xl border border-silver-600/20 bg-void-900/40 p-5 backdrop-blur-sm transition-all duration-500 hover:border-gold-400/45 hover:shadow-[0_0_32px_rgba(212,168,90,0.10)] md:p-6"
                   style={`--row-delay: ${i * 70}ms`}
                 >
-                  {/* Medallion — gold ring with engraved year */}
-                  <span class="medal relative grid h-14 w-14 shrink-0 place-items-center md:h-16 md:w-16">
+                  {/* Medallion — engraved year, stacked cleanly when multi-year */}
+                  <span class="medal relative grid h-16 w-16 shrink-0 place-items-center md:h-[72px] md:w-[72px]">
                     <span
                       class="medal-orb absolute inset-0 rounded-full"
                       aria-hidden="true"
@@ -66,43 +68,51 @@ const totalCount = awards.length;
                       class="medal-ring absolute -inset-1 rounded-full"
                       aria-hidden="true"
                     />
-                    <span class="relative font-mono text-[10px] uppercase tracking-[0.2em] text-gold-300 md:text-[11px]">
-                      {award.year}
+                    <span
+                      class:list={[
+                        "medal-year relative",
+                        medalYearLines(award.year).length > 1 && "is-multi",
+                      ]}
+                    >
+                      {medalYearLines(award.year).map((y, idx, arr) => (
+                        <>
+                          <span class="medal-year-line">{y}</span>
+                          {idx < arr.length - 1 && (
+                            <span class="medal-year-sep" aria-hidden="true">
+                              –
+                            </span>
+                          )}
+                        </>
+                      ))}
                     </span>
                   </span>
 
                   {/* Body */}
-                  <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <div class="flex min-w-0 flex-1 flex-col gap-2">
                     <div class="flex items-start justify-between gap-3">
-                      <h3 class="text-base font-medium leading-tight text-silver-100 transition-colors group-hover:text-gold-300 md:text-[17px]">
+                      <h3 class="text-lg font-medium leading-tight text-silver-100 transition-colors group-hover:text-gold-100 md:text-xl">
                         {award.name}
                       </h3>
                       {award.value && (
-                        <span class="shrink-0 rounded-full border border-gold-500/35 bg-gold-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-gold-300">
+                        <span class="shrink-0 rounded-full border border-gold-500/30 bg-gold-500/[0.06] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-gold-300/95">
                           {award.value}
                         </span>
                       )}
                     </div>
 
-                    <p class="text-sm text-silver-400/85">
-                      <span class="font-mono text-gold-400/55">@</span>
+                    <p class="text-[15px] text-silver-400/85 md:text-base">
+                      <span class="font-mono text-gold-400/45">@</span>
                       <span class="ml-1 transition-colors group-hover:text-silver-300">
                         {award.org}
                       </span>
                     </p>
 
                     {award.note && (
-                      <p class="mt-1.5 text-xs leading-relaxed text-silver-300/65">
+                      <p class="mt-1 text-sm leading-relaxed text-silver-300/70">
                         {award.note}
                       </p>
                     )}
                   </div>
-
-                  {/* Decorative corner flourish — subtle gold seal */}
-                  <span
-                    class="seal pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-40 transition-opacity duration-500 group-hover:opacity-100"
-                    aria-hidden="true"
-                  />
                 </li>
               ))}
             </ul>
@@ -121,48 +131,72 @@ const totalCount = awards.length;
 </Layout>
 
 <style>
-  /* Medallion — layered radial gradient ring with metallic feel */
+  /* Medallion — muted bronze, less saturated so it doesn't dominate */
   .medal-orb {
     background: radial-gradient(
       circle at 35% 30%,
-      rgba(232, 169, 96, 0.35) 0%,
-      rgba(160, 90, 20, 0.25) 45%,
-      rgba(40, 20, 4, 0.55) 100%
+      rgba(212, 168, 90, 0.18) 0%,
+      rgba(120, 75, 18, 0.18) 50%,
+      rgba(28, 18, 6, 0.55) 100%
     );
-    border: 1px solid rgba(232, 169, 96, 0.45);
+    border: 1px solid rgba(212, 168, 90, 0.32);
     box-shadow:
-      inset 0 0 14px rgba(232, 169, 96, 0.18),
-      0 0 16px rgba(232, 169, 96, 0.12);
+      inset 0 0 12px rgba(212, 168, 90, 0.10),
+      0 0 12px rgba(212, 168, 90, 0.06);
     transition:
       box-shadow 320ms ease,
       transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .medal-ring {
-    border: 1px dashed rgba(232, 169, 96, 0.35);
-    opacity: 0.7;
+    border: 1px dashed rgba(212, 168, 90, 0.22);
+    opacity: 0.55;
     transition:
       transform 600ms cubic-bezier(0.2, 0.7, 0.2, 1),
       opacity 320ms ease;
   }
+  /* Engraved year inside the medallion. Single-year shows on one line at
+     a comfortable size; multi-year stacks the two endpoint years with a
+     thin "–" separator so nothing ever wraps mid-string. */
+  .medal-year {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    color: rgba(232, 194, 117, 0.92);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 500;
+    text-shadow: 0 0 8px rgba(212, 168, 90, 0.4);
+    transition: color 320ms ease, text-shadow 320ms ease;
+  }
+  .medal-year-line {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    line-height: 1;
+  }
+  .medal-year.is-multi .medal-year-line {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  .medal-year-sep {
+    font-size: 8px;
+    line-height: 1;
+    color: rgba(212, 168, 90, 0.55);
+    margin: -1px 0;
+  }
   .award-card:hover .medal-orb {
     box-shadow:
-      inset 0 0 16px rgba(232, 169, 96, 0.32),
-      0 0 26px rgba(232, 169, 96, 0.32);
-    transform: scale(1.06);
+      inset 0 0 14px rgba(212, 168, 90, 0.20),
+      0 0 22px rgba(212, 168, 90, 0.20);
+    transform: scale(1.04);
   }
   .award-card:hover .medal-ring {
     transform: rotate(180deg);
-    opacity: 1;
+    opacity: 0.85;
   }
-
-  /* Decorative seal in the top-right corner — radial gold wash */
-  .seal {
-    background: radial-gradient(
-      circle,
-      rgba(232, 169, 96, 0.18) 0%,
-      rgba(232, 169, 96, 0.06) 40%,
-      transparent 70%
-    );
+  .award-card:hover .medal-year {
+    color: rgba(244, 216, 150, 1);
+    text-shadow: 0 0 12px rgba(212, 168, 90, 0.7);
   }
 
   /* Stagger fade-in for each category group */
@@ -200,7 +234,8 @@ const totalCount = awards.length;
       animation: none;
     }
     .medal-orb,
-    .medal-ring {
+    .medal-ring,
+    .medal-year {
       transition: none;
     }
   }

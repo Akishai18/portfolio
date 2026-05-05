@@ -447,7 +447,7 @@ export const awards: Award[] = [
     year: "2025",
     category: "featured",
     value: "1st · World",
-    note: "Out of thousands of competitors from 30+ countries — top global performance across role-play, written exam, and presentation.",
+    note: "Won 1st place against thousands of competitors from across the world by presenting a unique venture capital portfolio strategy with a forecasing tool to a student athelete",
   },
   {
     name: "Second Place International Champion · Financial Consulting",
@@ -455,6 +455,7 @@ export const awards: Award[] = [
     year: "2024",
     category: "featured",
     value: "2nd · World",
+    note: "Won 2nd place against thousands of competitors from across the world by presenting a unique venture capital portfolio strategy with a forecasing tool to a student athelete",
   },
   {
     name: "Top 10 International Finalist · Financial Consulting",
@@ -484,7 +485,7 @@ export const awards: Award[] = [
     org: "Oxford Math Essay Writing Contest",
     year: "2024",
     category: "featured",
-    note: "Original mathematics essay published through the Oxford competition.",
+    note: "Published a mathematics essay on the Continuem Hypothesis through the Oxford Essay competition.",
   },
   {
     name: "Quantum School For Young Students (QSYS)",

@@ -74,7 +74,7 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
           {profile.tagline}
         </p>
 
-        <!-- Jot notes — quick story arc -->
+        <!-- Jot notes — quick story arc, threaded by a single gold line -->
         <ul
           class="quick-facts mt-10"
           role="list"
@@ -83,11 +83,6 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
         >
           {profile.quickFacts.map((row) => (
             <li class="quick-row">
-              <div class="quick-head">
-                <span class="quick-dot" aria-hidden="true"></span>
-                <span class="quick-label">{row.label}</span>
-                <span class="quick-rule" aria-hidden="true"></span>
-              </div>
               <p class="quick-body">
                 {parseFactBody(row.body).map((part) =>
                   part.hl ? <span class="hl">{part.text}</span> : part.text
@@ -256,59 +251,73 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
     animation: fadeInUp 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
   }
 
-  /* --- Quick facts (jot notes) --- */
+  /* --- Quick facts (jot notes) ---
+     Each row is threaded by a vertical gold gradient line on the left,
+     with a glowing dot per row. No category labels — the highlight pills
+     in the body text carry the visual weight. */
   .quick-facts {
+    position: relative;
     max-width: 720px;
     display: flex;
     flex-direction: column;
     gap: 1.4rem;
   }
-  .quick-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .quick-head {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-  }
-  .quick-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 9999px;
-    background: linear-gradient(135deg, #e6c275, #b8860b);
-    box-shadow: 0 0 8px rgba(184, 134, 11, 0.65);
-    flex-shrink: 0;
-  }
-  .quick-label {
-    font-family: "Geist Mono", ui-monospace, monospace;
-    font-size: 12px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.32em;
-    color: #d4a85a;
-    flex-shrink: 0;
-    /* lift the visual a bit since uppercase mono sits low in its line-box */
-    line-height: 1;
-  }
-  .quick-rule {
-    flex: 1;
-    height: 1px;
+  /* Vertical gold thread that runs through all dots */
+  .quick-facts::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 14px;
+    bottom: 14px;
+    width: 2px;
     background: linear-gradient(
-      to right,
-      rgba(212, 168, 90, 0.28) 0%,
-      rgba(212, 168, 90, 0.08) 50%,
-      rgba(212, 168, 90, 0) 100%
+      to bottom,
+      rgba(212, 168, 90, 0.45) 0%,
+      rgba(212, 168, 90, 0.18) 55%,
+      rgba(212, 168, 90, 0.04) 100%
     );
+    border-radius: 1px;
+    pointer-events: none;
   }
-  .quick-arrow {
-    display: none;
+  .quick-row {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    transition: transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Glowing gold dot, rendered as a pseudo-element so it sits inline as
+     the first flex child and aligns with the body text's first line. */
+  .quick-row::before {
+    content: "";
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    margin-top: 10px;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 30% 30%, #f4d896, #b8860b 65%);
+    box-shadow:
+      0 0 14px rgba(212, 168, 90, 0.65),
+      0 0 4px rgba(255, 220, 150, 0.55);
+    position: relative;
+    z-index: 1;
+    transition:
+      box-shadow 320ms ease,
+      transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .quick-row:hover::before {
+    box-shadow:
+      0 0 22px rgba(232, 194, 117, 0.85),
+      0 0 6px rgba(255, 230, 170, 0.7);
+    transform: scale(1.15);
+  }
+  .quick-row:hover {
+    transform: translateX(2px);
   }
   .quick-body {
     margin: 0;
     font-size: 16px;
-    line-height: 1.65;
+    line-height: 1.7;
     color: rgba(216, 219, 226, 0.92);
   }
   /* Inline highlight pills for key terms */

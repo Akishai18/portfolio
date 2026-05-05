@@ -60,6 +60,124 @@
   };
 
   /* ------------------------------------------------------------- */
+  /* Named constellation shapes — unit coords in [0,1] x [0,1].     */
+  /* These are scaled, rotated, and placed across the viewport so   */
+  /* the bg has recognizable patterns instead of pure noise.        */
+  /* ------------------------------------------------------------- */
+  type ConstellationShape = {
+    name: string;
+    stars: Array<[number, number]>;
+    edges: Array<[number, number]>;
+  };
+
+  const SHAPES: ConstellationShape[] = [
+    {
+      // Orion — hourglass with belt
+      name: "Orion",
+      stars: [
+        [0.18, 0.08], // Betelgeuse (left shoulder)
+        [0.58, 0.04], // Bellatrix (right shoulder)
+        [0.28, 0.5], // Mintaka
+        [0.4, 0.5], // Alnilam
+        [0.5, 0.5], // Alnitak
+        [0.06, 0.96], // Saiph
+        [0.72, 0.96], // Rigel
+      ],
+      edges: [
+        [0, 2],
+        [1, 4],
+        [2, 3],
+        [3, 4],
+        [2, 5],
+        [4, 6],
+      ],
+    },
+    {
+      // Ursa Major — Big Dipper
+      name: "Ursa Major",
+      stars: [
+        [0.85, 0.05], // Dubhe
+        [0.85, 0.32], // Merak
+        [0.65, 0.42], // Phecda
+        [0.55, 0.18], // Megrez
+        [0.4, 0.28], // Alioth
+        [0.2, 0.4], // Mizar
+        [0.0, 0.55], // Alkaid
+      ],
+      edges: [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 0],
+        [3, 4],
+        [4, 5],
+        [5, 6],
+      ],
+    },
+    {
+      // Cassiopeia — W
+      name: "Cassiopeia",
+      stars: [
+        [0.0, 0.05],
+        [0.25, 0.7],
+        [0.5, 0.05],
+        [0.75, 0.7],
+        [1.0, 0.05],
+      ],
+      edges: [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [3, 4],
+      ],
+    },
+    {
+      // Cygnus — Northern Cross
+      name: "Cygnus",
+      stars: [
+        [0.5, 0.0], // Deneb
+        [0.5, 0.45], // Sadr
+        [0.5, 1.0], // Albireo
+        [0.0, 0.45], // left wing
+        [1.0, 0.45], // right wing
+      ],
+      edges: [
+        [0, 1],
+        [1, 2],
+        [3, 1],
+        [1, 4],
+      ],
+    },
+    {
+      // Lyra — Vega + parallelogram
+      name: "Lyra",
+      stars: [
+        [0.5, 0.0], // Vega
+        [0.18, 0.45],
+        [0.82, 0.45],
+        [0.32, 1.0],
+        [0.68, 1.0],
+      ],
+      edges: [
+        [0, 1],
+        [0, 2],
+        [1, 3],
+        [2, 4],
+        [3, 4],
+      ],
+    },
+  ];
+
+  type PlacedConstellation = {
+    shape: ConstellationShape;
+    ox: number;
+    oy: number;
+    scale: number;
+    rot: number;
+    twPhase: number;
+  };
+
+  /* ------------------------------------------------------------- */
   /* Gravitational lens math.                                       */
   /* For each drawn pixel within LENS_RADIUS of the cursor, pull    */
   /* its position toward the cursor by an amount that follows a     */
@@ -110,6 +228,7 @@
     let conCtx: CanvasRenderingContext2D | null = null;
     let conNodes: Node[] = [];
     let conLinks: Array<{ a: number; b: number; d: number }> = [];
+    let placedConstellations: PlacedConstellation[] = [];
     let shots: Shot[] = [];
     let nebulaPhase = 0;
 
@@ -133,6 +252,46 @@
         nebulaCtx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
         nebulaCtx.fill();
       }
+    }
+
+    function placeNamedConstellations() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      // Pick 3 random shapes and place each in its own quadrant so they
+      // don't overlap and there's always a recognizable pattern visible.
+      const shuffled = [...SHAPES].sort(() => Math.random() - 0.5);
+      const picks = shuffled.slice(0, Math.min(3, shuffled.length));
+      const margin = 80;
+      const zones = [
+        { xMin: margin, xMax: w * 0.4, yMin: margin, yMax: h * 0.45 }, // top-left
+        { xMin: w * 0.6, xMax: w - margin, yMin: margin, yMax: h * 0.45 }, // top-right
+        { xMin: w * 0.6, xMax: w - margin, yMin: h * 0.55, yMax: h - margin }, // bottom-right
+        { xMin: margin, xMax: w * 0.4, yMin: h * 0.55, yMax: h - margin }, // bottom-left
+      ].sort(() => Math.random() - 0.5);
+
+      placedConstellations = picks.map((shape, i) => {
+        const z = zones[i % zones.length];
+        const scale = 110 + Math.random() * 110; // ~110–220px wide
+        return {
+          shape,
+          ox: z.xMin + Math.random() * (z.xMax - z.xMin),
+          oy: z.yMin + Math.random() * (z.yMax - z.yMin),
+          scale,
+          rot: (Math.random() - 0.5) * 0.4, // small tilt
+          twPhase: Math.random() * Math.PI * 2,
+        };
+      });
+    }
+
+    /** Convert a star's unit coords to world (canvas) coords for a placed constellation. */
+    function namedStarPos(p: PlacedConstellation, idx: number): [number, number] {
+      const [ux, uy] = p.shape.stars[idx];
+      // Center the unit shape on (0.5, 0.5) so rotation pivots correctly.
+      const rx = (ux - 0.5) * p.scale;
+      const ry = (uy - 0.5) * p.scale;
+      const cos = Math.cos(p.rot);
+      const sin = Math.sin(p.rot);
+      return [p.ox + rx * cos - ry * sin, p.oy + rx * sin + ry * cos];
     }
 
     function buildConstellation() {
@@ -218,6 +377,7 @@
       const con = document.querySelector<HTMLCanvasElement>('[data-layer="constellation"]');
       conCtx = con ? con.getContext("2d") : null;
       buildConstellation();
+      placeNamedConstellations();
       shots = [];
       return true;
     }
@@ -331,6 +491,65 @@
           conCtx.beginPath();
           conCtx.arc(lensX(n.x, n.y, cx, cy), lensY(n.x, n.y, cx, cy), n.r, 0, Math.PI * 2);
           conCtx.fill();
+        }
+
+        // ── Named constellations (Orion, Big Dipper, …) ──
+        // Drawn slightly brighter than the procedural network so the
+        // patterns read clearly. Edges are sub-segmented + lensed so they
+        // bend around the cursor; star halos + labels lens too.
+        for (const pc of placedConstellations) {
+          if (!reduce) pc.twPhase += 0.006;
+          const breath = reduce ? 1 : 0.85 + 0.15 * Math.sin(pc.twPhase);
+
+          // Edges
+          conCtx.lineWidth = 0.9;
+          conCtx.strokeStyle = `rgba(212,168,90,${0.26 * breath})`;
+          for (const [a, b] of pc.shape.edges) {
+            const pa = namedStarPos(pc, a);
+            const pb = namedStarPos(pc, b);
+            conCtx.beginPath();
+            for (let i = 0; i <= SEG; i++) {
+              const t = i / SEG;
+              const px = pa[0] + (pb[0] - pa[0]) * t;
+              const py = pa[1] + (pb[1] - pa[1]) * t;
+              const lx = lensX(px, py, cx, cy);
+              const ly = lensY(px, py, cx, cy);
+              if (i === 0) conCtx.moveTo(lx, ly);
+              else conCtx.lineTo(lx, ly);
+            }
+            conCtx.stroke();
+          }
+
+          // Stars + halos
+          for (let i = 0; i < pc.shape.stars.length; i++) {
+            const [sx, sy] = namedStarPos(pc, i);
+            const lx = lensX(sx, sy, cx, cy);
+            const ly = lensY(sx, sy, cx, cy);
+            const flicker = reduce ? 1 : 0.7 + 0.3 * Math.sin(pc.twPhase + i * 0.7);
+            // Outer halo
+            conCtx.fillStyle = `rgba(212,168,90,${0.22 * flicker})`;
+            conCtx.beginPath();
+            conCtx.arc(lx, ly, 4.2, 0, Math.PI * 2);
+            conCtx.fill();
+            // Bright core
+            conCtx.fillStyle = `rgba(248,232,180,${0.95 * flicker})`;
+            conCtx.beginPath();
+            conCtx.arc(lx, ly, 1.7, 0, Math.PI * 2);
+            conCtx.fill();
+          }
+
+          // Faint mono label, lensed alongside the figure
+          if (pc.shape.name) {
+            const labelX = pc.ox - pc.scale * 0.5 + 2;
+            const labelY = pc.oy + pc.scale * 0.6;
+            conCtx.font = "9px ui-monospace, SFMono-Regular, Menlo, monospace";
+            conCtx.fillStyle = `rgba(212,168,90,${0.32 * breath})`;
+            conCtx.fillText(
+              `◦ ${pc.shape.name.toUpperCase()}`,
+              lensX(labelX, labelY, cx, cy),
+              lensY(labelX, labelY, cx, cy),
+            );
+          }
         }
       }
 

@@ -24,19 +24,19 @@ export const profile = {
   quickFacts: [
     {
       label: "previously",
-      body: "SWE intern @ {{Nvestiv}}, {{North P&D}} · research @ U of T Shoichet Lab",
-    },
-    {
-      label: "currently",
       body: "SWE intern @ {{Quantified Health}} building telemedicine platforms and tooling",
     },
     {
+      label: "currently",
+      body: "Prev SWE @ {{North P&D}}, {{Nvestiv}} and Research @ {{U of T Shoichet Lab}}",
+    },
+    {
       label: "building",
-      body: "SignalM, a market regime forecasting platform using PCA, HMM, and ML models",
+      body: "Building {{SignalM}}, a market regime forecasting platform using PCA, HMM, and ML models",
     },
     {
       label: "interested in",
-      body: "Quantitative finance, algorithmics trading, and risk modeling",
+      body: "Researching LLM applications in quantitative finance, algorithmic trading, and risk modeling",
     },
   ],
   email: "akishais18@gmail.com",

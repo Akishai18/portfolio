@@ -40,5 +40,135 @@ const {
     <main id="main" class="relative z-10 min-h-screen md:pl-[180px]">
       <slot />
     </main>
+
+    {/* Home-page audio — plays every time the home route is opened.
+        transition:persist keeps the element alive across view transitions
+        so playback isn't interrupted mid-stream. */}
+    <audio
+      id="home-audio"
+      src="/audio/intro.mp3"
+      preload="auto"
+      transition:persist
+    ></audio>
+
+    <script>
+      (function () {
+        // ── Audio toggle ────────────────────────────────────────────────
+        // Flip this to false to disable home-page audio entirely.
+        const ENABLED = false;
+        // ────────────────────────────────────────────────────────────────
+
+        // Play the first ~5s at full volume, then fade out over 1s.
+        const HOLD_MS = 5000;
+        const FADE_MS = 1000;
+        const STEP_MS = 40;
+
+        if (!ENABLED) return;
+
+        let holdTimer: number | null = null;
+        let fadeTimer: number | null = null;
+
+        function clearTimers() {
+          if (holdTimer !== null) {
+            window.clearTimeout(holdTimer);
+            holdTimer = null;
+          }
+          if (fadeTimer !== null) {
+            window.clearInterval(fadeTimer);
+            fadeTimer = null;
+          }
+        }
+
+        function isHome() {
+          const p = window.location.pathname;
+          return p === "/" || p === "";
+        }
+
+        function getAudio() {
+          return document.getElementById(
+            "home-audio",
+          ) as HTMLAudioElement | null;
+        }
+
+        function startFade() {
+          const audio = getAudio();
+          if (!audio) return;
+          const steps = Math.max(1, Math.floor(FADE_MS / STEP_MS));
+          const startVol = audio.volume;
+          let step = 0;
+          fadeTimer = window.setInterval(() => {
+            step++;
+            audio.volume = Math.max(0, startVol * (1 - step / steps));
+            if (step >= steps) {
+              clearTimers();
+              audio.pause();
+              try {
+                audio.currentTime = 0;
+              } catch {}
+              audio.volume = 1;
+            }
+          }, STEP_MS);
+        }
+
+        function scheduleFade() {
+          holdTimer = window.setTimeout(startFade, HOLD_MS);
+        }
+
+        function play() {
+          const audio = getAudio();
+          if (!audio) return;
+
+          clearTimers();
+          audio.volume = 1;
+          try {
+            audio.currentTime = 0;
+          } catch {}
+
+          const p = audio.play();
+          if (p && typeof p.then === "function") {
+            p.then(scheduleFade).catch(() => {
+              // Autoplay blocked — retry once on first user interaction.
+              const unlock = () => {
+                window.removeEventListener("pointerdown", unlock);
+                window.removeEventListener("keydown", unlock);
+                window.removeEventListener("touchstart", unlock);
+                if (!isHome()) return;
+                clearTimers();
+                audio.volume = 1;
+                try {
+                  audio.currentTime = 0;
+                } catch {}
+                audio.play().then(scheduleFade).catch(() => {});
+              };
+              window.addEventListener("pointerdown", unlock, { once: true });
+              window.addEventListener("keydown", unlock, { once: true });
+              window.addEventListener("touchstart", unlock, { once: true });
+            });
+          } else {
+            scheduleFade();
+          }
+        }
+
+        function stop() {
+          const audio = getAudio();
+          clearTimers();
+          if (!audio) return;
+          if (!audio.paused) {
+            audio.pause();
+            try {
+              audio.currentTime = 0;
+            } catch {}
+          }
+          audio.volume = 1;
+        }
+
+        function handlePageLoad() {
+          if (isHome()) play();
+          else stop();
+        }
+
+        document.addEventListener("astro:page-load", handlePageLoad);
+      })();
+    </script>
   </body>
 </html>
