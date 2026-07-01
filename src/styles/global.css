@@ -187,6 +187,17 @@ h4 {
   border: 1px solid rgba(184, 134, 11, 0.25);
 }
 
+/* --- Scroll-triggered reveals ---------------------------------------
+   Elements with entrance animations ([data-fade-in] section blocks,
+   [data-reveal] rows/cards) stay paused until they enter the viewport.
+   A small script in Layout.astro adds .in-view via IntersectionObserver;
+   [data-reveal] elements additionally get a per-batch stagger so rows
+   cascade whenever they scroll in, not just on page load. */
+[data-fade-in]:not(.in-view),
+[data-reveal]:not(.in-view) {
+  animation-play-state: paused !important;
+}
+
 /* Reduced motion — kill all heavy animation */
 @media (prefers-reduced-motion: reduce) {
   *,

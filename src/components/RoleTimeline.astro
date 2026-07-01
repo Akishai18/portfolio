@@ -59,6 +59,7 @@ const hiddenCount = showCollapse ? roles.length - initialCount : 0;
               isCollapsed && "is-collapsed",
             ]}
             style={`--role-delay: ${i * 80}ms;`}
+            data-reveal
           >
             {/* Org icon node on the timeline. The image is sized larger
                 than the circular wrapper and uses object-cover, so the

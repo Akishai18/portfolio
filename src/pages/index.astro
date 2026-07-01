@@ -660,6 +660,12 @@ function parseFactBody(body: string): Array<{ text: string; hl: boolean }> {
     background: rgba(212, 168, 90, 0.18);
     border-color: rgba(212, 168, 90, 0.55);
   }
+  /* Narrow screens: let long pills wrap instead of overflowing the column */
+  @media (max-width: 480px) {
+    .hl {
+      white-space: normal;
+    }
+  }
 
   /* --- "Right now" panel ----------------------------------------------
      Editorial label/value list that lives left of the contact form.

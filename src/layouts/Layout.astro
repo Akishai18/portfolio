@@ -98,6 +98,15 @@ const personSchema = {
     <ClientRouter />
   </head>
   <body>
+    <noscript>
+      {/* Without JS the reveal observer never runs — let animations play. */}
+      <style>
+        [data-fade-in],
+        [data-reveal] {
+          animation-play-state: running !important;
+        }
+      </style>
+    </noscript>
     <a href="#main" class="skip-to-content">Skip to content</a>
     <Starfield transition:persist transition:name="starfield-layer" />
     <Cursor client:load transition:persist transition:name="cursor-layer" />
@@ -115,6 +124,46 @@ const personSchema = {
       preload="auto"
       transition:persist
     ></audio>
+
+    <script>
+      /* ── Scroll-triggered reveals ─────────────────────────────────────
+         Entrance animations are paused via global.css until the element
+         enters the viewport. Section blocks ([data-fade-in]) keep their
+         authored delays; rows/cards ([data-reveal]) get a fresh per-batch
+         stagger so they cascade on scroll instead of having already
+         finished animating off-screen. */
+      function initReveal() {
+        const els = Array.from(
+          document.querySelectorAll<HTMLElement>("[data-fade-in], [data-reveal]"),
+        ).filter((el) => !el.classList.contains("in-view"));
+        if (els.length === 0) return;
+
+        if (!("IntersectionObserver" in window)) {
+          els.forEach((el) => el.classList.add("in-view"));
+          return;
+        }
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            const batch = entries.filter((e) => e.isIntersecting);
+            batch.forEach((e, idx) => {
+              const el = e.target as HTMLElement;
+              if (el.hasAttribute("data-reveal")) {
+                // Cap the cascade so large first batches never leave
+                // later rows waiting more than ~half a second.
+                el.style.animationDelay = `${Math.min(idx * 70, 490)}ms`;
+              }
+              el.classList.add("in-view");
+              io.unobserve(el);
+            });
+          },
+          { rootMargin: "0px 0px -8% 0px", threshold: 0.05 },
+        );
+        els.forEach((el) => io.observe(el));
+      }
+      initReveal();
+      document.addEventListener("astro:page-load", initReveal);
+    </script>
 
     <script>
       (function () {

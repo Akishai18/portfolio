@@ -31,7 +31,7 @@ const rest = projects.filter((p) => !p.featured);
               <li
                 class="group relative flex flex-col overflow-hidden rounded-2xl border border-silver-600/20 bg-void-900/40 backdrop-blur-sm transition-all duration-500 hover:border-gold-500/50 hover:shadow-[0_0_50px_rgba(184,134,11,0.18)] md:flex-row md:min-h-[380px]"
                 style={`animation-delay: ${i * 80}ms`}
-                data-fade-in
+                data-reveal
               >
                 {/* Info column — left on desktop, top on mobile */}
                 <div class="flex flex-col justify-between gap-6 p-7 md:w-2/5 md:shrink-0 md:p-10">
@@ -147,7 +147,7 @@ const rest = projects.filter((p) => !p.featured);
               <li
                 class="group relative flex flex-col overflow-hidden rounded-2xl border border-silver-600/20 bg-void-900/40 backdrop-blur-sm transition-all duration-500 hover:border-gold-500/50 hover:shadow-[0_0_40px_rgba(184,134,11,0.15)]"
                 style={`animation-delay: ${i * 60}ms`}
-                data-fade-in
+                data-reveal
               >
                 <a
                   href={p.link}
@@ -231,7 +231,7 @@ const rest = projects.filter((p) => !p.featured);
 </Layout>
 
 <style>
-  [data-fade-in] {
+  [data-reveal] {
     opacity: 0;
     transform: translateY(16px);
     animation: cardFade 700ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
@@ -243,7 +243,7 @@ const rest = projects.filter((p) => !p.featured);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    [data-fade-in] {
+    [data-reveal] {
       opacity: 1;
       transform: none;
       animation: none;

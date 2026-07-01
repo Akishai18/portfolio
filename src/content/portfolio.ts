@@ -448,6 +448,36 @@ export const awardCategoryLabels: Record<Award["category"], string> = {
   other: "Honors & Scholarships",
 };
 
+/** Headline numbers for the awards page stats band. */
+export type AwardStat = {
+  value: string;
+  label: string;
+  detail: string;
+};
+
+export const awardStats: AwardStat[] = [
+  {
+    value: "1st",
+    label: "in the world",
+    detail: "DECA ICDC Financial Consulting",
+  },
+  {
+    value: "Top 7%",
+    label: "of 22,000+ competitors",
+    detail: "IMC Prosperity global finals",
+  },
+  {
+    value: "$220K+",
+    label: "scholarship offers",
+    detail: "Merit and admission awards",
+  },
+  {
+    value: "15K+",
+    label: "research readers",
+    detail: "Published CS and math papers",
+  },
+];
+
 export const awards: Award[] = [
   // ── Top Honors ── International DECA + IMC + Research/Publications
   {
@@ -456,7 +486,7 @@ export const awards: Award[] = [
     year: "2025",
     category: "featured",
     value: "1st · World",
-    note: "Won 1st place against thousands of competitors from across the world by presenting a unique venture capital portfolio strategy with a forecasing tool to a student athelete",
+    note: "Won 1st place against thousands of competitors from across the world by presenting a venture capital portfolio strategy and custom forecasting tool to a student athlete.",
   },
   {
     name: "Second Place International Champion · Financial Consulting",
@@ -464,7 +494,7 @@ export const awards: Award[] = [
     year: "2024",
     category: "featured",
     value: "2nd · World",
-    note: "Won 2nd place against thousands of competitors from across the world by presenting a unique venture capital portfolio strategy with a forecasing tool to a student athelete",
+    note: "Won 2nd place against thousands of competitors from across the world by presenting a venture capital portfolio strategy and custom forecasting tool to a student athlete.",
   },
   {
     name: "Top 10 International Finalist · Financial Consulting",
@@ -494,7 +524,7 @@ export const awards: Award[] = [
     org: "Oxford Math Essay Writing Contest",
     year: "2024",
     category: "featured",
-    note: "Published a mathematics essay on the Continuem Hypothesis through the Oxford Essay competition.",
+    note: "Published a mathematics essay on the Continuum Hypothesis through the Oxford Essay competition.",
   },
   {
     name: "Quantum School For Young Students (QSYS)",
