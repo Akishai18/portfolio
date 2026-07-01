@@ -345,6 +345,15 @@ export const projects: Project[] = [
     featured: true,
   },
   {
+    name: "Apollo",
+    description:
+      "Quant research platform that turns natural language strategy ideas into fully backtested trading strategies, complete with equity curves, walk-forward validation, parameter tuning, and integrity scans to catch overfitting and look-ahead bias.",
+    tags: ["Quant Research", "Backtesting", "LLM Agents"],
+    image: "/img/projects/apollo.png",
+    link: "https://github.com/Akishai18",
+    featured: true,
+  },
+  {
     name: "PosePerfect",
     description:
       "Real-time fitness coaching app using OpenCV pose estimation in the browser to track body landmarks and joint angles, then applying generative AI to turn pose data and screenshots into actionable form feedback.",
