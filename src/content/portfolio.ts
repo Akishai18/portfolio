@@ -272,7 +272,7 @@ export const educations: Education[] = [
   {
     school: "University of Waterloo",
     degree: "B.Eng. Software Engineering",
-    date: "Sep 2025 – Apr 2030",
+    date: "Sep 2025 – Present",
     icon: "/img/company/Waterloo.png",
     iconBg: "white",
     bullets: [
