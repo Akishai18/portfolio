@@ -183,7 +183,7 @@ export const leadership: Role[] = [
   {
     title: "Chapter President",
     org: "DECA",
-    date: "Jun 2024 – Jun 2025",
+    date: "",
     icon: "/img/company/DECA.png",
     iconBg: "white",
     bullets: [
@@ -272,7 +272,7 @@ export const educations: Education[] = [
   {
     school: "University of Waterloo",
     degree: "B.Eng. Software Engineering",
-    date: "Sep 2025 – Present",
+    date: "",
     icon: "/img/company/Waterloo.png",
     iconBg: "white",
     bullets: [
@@ -295,7 +295,7 @@ export const educations: Education[] = [
   {
     school: "Castlebrooke Secondary School",
     degree: "High School Diploma",
-    date: "Sep 2021 – Jun 2025",
+    date: "",
     icon: "/img/company/Castlebrooke.png",
     iconBg: "white",
     bullets: [
@@ -309,7 +309,7 @@ export const educations: Education[] = [
   {
     school: "Quantum School For Young Students (QSYS)",
     degree: "Enrichment Program",
-    date: "August 2024",
+    date: "",
     icon: "/img/company/Waterloo.png",
     iconBg: "white",
     bullets: [
@@ -483,25 +483,10 @@ export const awards: Award[] = [
   {
     name: "First Place International Champion · Financial Consulting",
     org: "DECA · ICDC",
-    year: "2025",
+    year: "",
     category: "featured",
     value: "1st · World",
     note: "Won 1st place against thousands of competitors from across the world by presenting a venture capital portfolio strategy and custom forecasting tool to a student athlete.",
-  },
-  {
-    name: "Second Place International Champion · Financial Consulting",
-    org: "DECA · ICDC",
-    year: "2024",
-    category: "featured",
-    value: "2nd · World",
-    note: "Won 2nd place against thousands of competitors from across the world by presenting a venture capital portfolio strategy and custom forecasting tool to a student athlete.",
-  },
-  {
-    name: "Top 10 International Finalist · Financial Consulting",
-    org: "DECA · ICDC",
-    year: "2024 · 2025",
-    category: "featured",
-    value: "Top 10 · ×2",
   },
   {
     name: "IMC Prosperity Algorithmic Trading · Finalist",
@@ -520,6 +505,21 @@ export const awards: Award[] = [
     note: "Selected from a competitive submission pool; distributed to 15,000+ readers across the journal's audience.",
   },
   {
+    name: "Second Place International Champion · Financial Consulting",
+    org: "DECA · ICDC",
+    year: "",
+    category: "featured",
+    value: "2nd · World",
+    note: "Won 2nd place against thousands of competitors from across the world by presenting a venture capital portfolio strategy and custom forecasting tool to a student athlete.",
+  },
+  {
+    name: "Top 10 International Finalist · Financial Consulting",
+    org: "DECA · ICDC",
+    year: "",
+    category: "featured",
+    value: "Top 10 · ×2",
+  },
+  {
     name: "Published Mathematics Paper",
     org: "Oxford Math Essay Writing Contest",
     year: "2024",
@@ -529,23 +529,23 @@ export const awards: Award[] = [
   {
     name: "Quantum School For Young Students (QSYS)",
     org: "Institute for Quantum Computing · University of Waterloo",
-    year: "2024",
+    year: "",
     category: "featured",
     note: "Selective research program in quantum information science alongside leading IQC researchers.",
   },
   {
-    name: "Schulich Leader Nominee",
+    name: "Schulich Leader Scholarship Recipient",
     org: "Schulich Foundation",
-    year: "2025",
+    year: "",
     category: "featured",
-    note: "Nominated for Canada's most prestigious undergraduate STEM scholarship.",
+    note: "Received the Schulich Leader Scholarship ($120,000), Canada's most prestigious undergraduate STEM scholarship, by the University of Toronto",
   },
 
   // ── Provincial ── DECA Ontario
   {
     name: "Provincial Champion · Financial Consulting",
     org: "DECA Ontario",
-    year: "2024 · 2025",
+    year: "",
     category: "provincial",
     value: "1st · Ontario · ×2",
     note: "Back-to-back provincial champion in financial consulting at DECA Ontario.",
@@ -553,7 +553,7 @@ export const awards: Award[] = [
   {
     name: "Top 10 Provincial Finalist · Financial Consulting",
     org: "DECA Ontario",
-    year: "2024 · 2025",
+    year: "",
     category: "provincial",
     value: "Top 10 · ×2",
   },
@@ -562,7 +562,7 @@ export const awards: Award[] = [
   {
     name: "Total Scholarship Offers",
     org: "Universities & institutions",
-    year: "2025",
+    year: "",
     category: "other",
     value: "$220,000+",
     note: "Across multiple admission and merit-based scholarship offers.",
@@ -570,7 +570,7 @@ export const awards: Award[] = [
   {
     name: "Euclid Math Contest · School Champion",
     org: "CEMC · University of Waterloo",
-    year: "2024",
+    year: "",
     category: "other",
     value: "1st · School",
   },
@@ -584,21 +584,21 @@ export const awards: Award[] = [
   {
     name: "Top Ontario Scholar",
     org: "Ontario Ministry of Education",
-    year: "2025",
+    year: "",
     category: "other",
     value: "99% avg",
   },
   {
     name: "Karla Bailey Trustee Award",
     org: "Peel District School Board",
-    year: "2025",
+    year: "",
     category: "other",
     note: "Trustee award recognizing academic excellence and community contribution.",
   },
   {
     name: "Honour Standing · Honor Roll",
     org: "Castlebrooke Secondary School",
-    year: "2021–2025",
+    year: "",
     category: "other",
     note: "Top academic standing maintained Grades 9–12.",
   },
