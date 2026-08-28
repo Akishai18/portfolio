@@ -73,11 +73,34 @@ export const workExperience: Role[] = [
   {
     title: "Software Engineering Intern",
     org: "Quantified Health",
-    date: "Incoming · Summer 2026",
+    date: "Apr 2026 – Aug 2026",
     icon: "/img/company/reimagine_health_canada_logo.jpeg",
     iconBg: "#4f46e5",
     bullets: [
       "Building scalable backend systems (Next.js, GraphQL, TypeScript) and DevOps infrastructure within a monorepo to power AI-driven telemedicine platforms serving 600+ patients monthly across Canadian healthcare.",
+    ],
+  },
+  {
+    title: "Student Insider, Student Product Group",
+    org: "Adobe",
+    date: "Jun 2026 – Present",
+    icon: "/img/company/adobe.svg",
+    iconBg: "white",
+    iconScale: 0.62,
+    bullets: [
+      "Selected as an Adobe Student Insider (1 of 30 from 8,000+ applicants) to build prototypes, complete special projects, and advise Adobe teams, providing technical and product feedback on emerging AI and creative tools to shape product direction.",
+    ],
+  },
+  {
+    title: "Software Engineering Intern",
+    org: "Nvestiv",
+    date: "Feb 2025 – Jun 2025",
+    icon: "/img/company/Nvestiv.png",
+    iconBg: "white",
+    bullets: [
+      "Reduced end-to-end request latency by 40% for a real-time investment analytics platform by profiling backend hot paths and batching API calls across a Next.js + Elixir stack deployed on Linux.",
+      "Improved investor-targeting accuracy by 30% across 20,000+ profiles by architecting a Weaviate vector database and a semantic search CLI with MCP-based retrieval pipelines for RAG-powered workflows.",
+      "Boosted AI investment agent throughput by 25% by optimizing numerical processing pipelines in Elixir and integrating real-time market APIs for low-latency financial inference.",
     ],
   },
   {
@@ -88,21 +111,8 @@ export const workExperience: Role[] = [
     iconBg: "white",
     iconScale: 0.78,
     bullets: [
-      "Developed and optimized 15+ client features including a scalable marketplace platform and RESTful API integrations using PHP, Vue.js, Laravel, and MySQL — increasing site performance metrics by 30%.",
-      "Built database-driven functionality supporting real-time updates for multiple clients, improving data retrieval efficiency by 20% and ensuring scalable performance under high traffic.",
-      "Identified and resolved 40+ critical bugs across frontend and backend systems, decreasing customer-reported issues by 25%.",
-    ],
-  },
-  {
-    title: "Software Engineering Intern",
-    org: "Nvestiv",
-    date: "Mar 2025 – Aug 2025",
-    icon: "/img/company/Nvestiv.png",
-    iconBg: "white",
-    bullets: [
-      "Built a full-stack investment platform with interactive search & filtering and real-time portfolio analytics; cut end-to-end request time 40% by batching API calls and eliminating redundant fetches in a Next.js frontend.",
-      "Built an investor vector database in Weaviate with a CLI for semantic search across 20,000+ profiles, improving target accuracy by 30%.",
-      "Refined AI-driven investment agents in Elixir, boosting performance 25% by streamlining data processing logic and integrating real-time financial APIs.",
+      "Architected a Laravel/PHP marketplace backend with Vue.js and PostgreSQL that enabled 5,000+ users to manage inventory and process transactions, cutting manual order-processing time by 30% through RESTful APIs and automated search.",
+      "Engineered and deployed a custom Moodle LMS for a client, reducing average server response time by 40% by architecting Linux infrastructure and optimizing PHP application logic and database query performance for a scalable production platform.",
     ],
   },
   {
