@@ -63,7 +63,7 @@ export const profile = {
     linkedin: "https://www.linkedin.com/in/akishai",
     twitter: "https://x.com/Akishai_S",
     instagram: "https://www.instagram.com/akishai_18/",
-    resume: "https://drive.google.com/file/d/1SkLsjJyz75VDf6Gdsh36H25bgn9dUPlB/view?usp=sharing",
+    resume: "/resume.pdf",
     email: "mailto:akishais18@gmail.com",
   },
   photo: "/img/me.jpg",
